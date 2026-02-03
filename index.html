@@ -5,39 +5,396 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Cruise Data Viewer</title>
   <style>
-    body { font-family: system-ui, sans-serif; padding: 16px; max-width: 1100px; margin: 0 auto; }
-    h2 { margin: 0 0 10px 0; }
-    input { width: 100%; padding: 10px; font-size: 16px; margin: 12px 0; box-sizing: border-box; }
-    button { padding: 8px 12px; font-size: 14px; cursor: pointer; }
-    .row { padding: 12px; border: 1px solid #ddd; border-radius: 10px; margin: 10px 0; }
-    .meta { opacity: 0.8; font-size: 14px; margin-top: 6px; }
-    .topbar { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap: wrap; }
-    .status { opacity:.85; }
-    .hint { opacity:.7; font-size: 13px; margin-top: 2px; }
-    a { text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    :root{
+      --bg: #0b1220;
+      --panel: rgba(255,255,255,0.06);
+      --panel2: rgba(255,255,255,0.08);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+      --muted2: rgba(255,255,255,0.55);
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 14px 40px rgba(0,0,0,0.35);
+      --shadow2: 0 10px 26px rgba(0,0,0,0.25);
+      --accent: #6ee7ff;
+      --accent2: #a78bfa;
+      --good: #34d399;
+      --warn: #fbbf24;
+      --bad: #fb7185;
+      --cardRadius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 20% -10%, rgba(110,231,255,0.20), transparent 55%),
+        radial-gradient(900px 500px at 90% 10%, rgba(167,139,250,0.18), transparent 60%),
+        radial-gradient(800px 600px at 50% 120%, rgba(52,211,153,0.10), transparent 60%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 18px 16px 60px;
+    }
+
+    .appbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: 14px 16px;
+      margin: 0 -16px 14px;
+      backdrop-filter: blur(14px);
+      background: linear-gradient(to bottom, rgba(11,18,32,0.88), rgba(11,18,32,0.60));
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .appbar-inner {
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .title {
+      display:flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .title h1 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0.2px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .dot { width: 6px; height: 6px; border-radius: 999px; background: var(--muted2); display:inline-block; }
+    .dot.good { background: var(--good); }
+    .dot.warn { background: var(--warn); }
+    .dot.bad  { background: var(--bad); }
+
+    .controls {
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      user-select: none;
+    }
+    .btn:hover { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.28); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0px); }
+    .btn.primary {
+      border-color: rgba(110,231,255,0.45);
+      background: linear-gradient(135deg, rgba(110,231,255,0.18), rgba(167,139,250,0.14));
+    }
+
+    .field {
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      min-width: min(560px, 92vw);
+    }
+    .field:focus-within {
+      border-color: rgba(110,231,255,0.55);
+      box-shadow: 0 0 0 4px rgba(110,231,255,0.12);
+    }
+    .field input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+    }
+    .field input::placeholder { color: rgba(255,255,255,0.45); }
+
+    .select {
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    .select option { color: #111; }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 10px 0 16px;
+    }
+
+    .grid {
+      display:flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .card {
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+      border-radius: var(--cardRadius);
+      overflow: hidden;
+      box-shadow: var(--shadow2);
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.18);
+      box-shadow: var(--shadow);
+    }
+
+    .card-inner {
+      display:flex;
+      gap: 14px;
+      padding: 14px;
+      align-items: flex-start;
+    }
+
+    .thumb {
+      width: 132px;
+      height: 88px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      overflow: hidden;
+      background: rgba(255,255,255,0.04);
+      flex: 0 0 auto;
+    }
+    .thumb img { width:100%; height:100%; object-fit: cover; display:block; }
+
+    .content { flex: 1; min-width: 0; }
+
+    .headline {
+      display:flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .name {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 0.2px;
+      margin: 0;
+      line-height: 1.25;
+    }
+
+    .meta {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      display:flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .tag {
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .link {
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(110,231,255,0.35);
+      background: rgba(110,231,255,0.10);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .link:hover { border-color: rgba(110,231,255,0.55); background: rgba(110,231,255,0.14); text-decoration: none; }
+
+    .dates-block {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.10);
+    }
+
+    .dates-title {
+      font-size: 12px;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.60);
+      margin-bottom: 8px;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .chips {
+      display:flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.82);
+    }
+
+    .chip.more {
+      cursor: pointer;
+      border-color: rgba(167,139,250,0.45);
+      background: rgba(167,139,250,0.14);
+    }
+    .chip.more:hover {
+      border-color: rgba(167,139,250,0.65);
+      background: rgba(167,139,250,0.18);
+    }
+
+    .footerbar {
+      margin-top: 14px;
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--muted2);
+      font-size: 12px;
+    }
+
+    .kbd {
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 2px 8px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.75);
+    }
+
+    @media (max-width: 700px) {
+      .field { min-width: 100%; }
+      .card-inner { flex-direction: column; }
+      .thumb { width: 100%; height: 160px; }
+      .headline { flex-direction: column; align-items: flex-start; }
+      .controls { width: 100%; justify-content: flex-start; }
+    }
   </style>
 </head>
-<body>
-  <h2>Cruise Data</h2>
 
-  <div class="topbar">
-    <button id="load">Load JSON</button>
-    <span id="status" class="status"></span>
+<body>
+  <div class="appbar">
+    <div class="appbar-inner">
+      <div class="title">
+        <h1>Cruise Data</h1>
+        <div class="subtitle">
+          <span class="pill"><span class="dot warn"></span><span id="status">Not loaded</span></span>
+          <span class="pill"><span class="dot"></span>Shows first 500 matches for speed</span>
+          <span class="pill"><span class="dot"></span>Links open in new tab</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="load" class="btn primary" title="Load cruiseDataNew.json">
+          ⛵ Load JSON
+        </button>
+
+        <div class="field" title="Search across all fields">
+          🔎
+          <input id="q" placeholder="Search ship, destination, dates, ports…" disabled />
+        </div>
+
+        <select id="regionFilter" class="select" disabled>
+          <option value="">All regions</option>
+        </select>
+
+        <select id="datesFilter" class="select" disabled>
+          <option value="">All sailings</option>
+          <option value="hasDates">Has dates</option>
+          <option value="noDates">No dates</option>
+        </select>
+      </div>
+    </div>
   </div>
 
-  <input id="q" placeholder="Search anything (ship, destination, dates, ports)..." disabled />
-  <div class="hint">Tip: results are limited to the first 500 matches for speed.</div>
+  <div class="wrap">
+    <div class="hint">
+      Tip: try searching “Tahiti”, “Star Collector”, a port name, or a month like “Feb”.
+      Use <span class="kbd">Ctrl</span> + <span class="kbd">F</span> too if you want, but the search box is way better.
+    </div>
 
-  <div id="out"></div>
+    <div id="out" class="grid"></div>
+
+    <div class="footerbar">
+      <div>Made for quick internal browsing (static page, no server).</div>
+      <div id="countNote"></div>
+    </div>
+  </div>
 
   <script>
     let DATA = [];
+    let LAST_RENDERED = [];
 
     const loadBtn = document.getElementById("load");
     const q = document.getElementById("q");
     const out = document.getElementById("out");
     const status = document.getElementById("status");
+    const regionFilter = document.getElementById("regionFilter");
+    const datesFilter = document.getElementById("datesFilter");
+    const countNote = document.getElementById("countNote");
 
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, c => ({
@@ -57,117 +414,163 @@
       return "";
     }
 
+    function normalizeDuration(item) {
+      const v = item?.duration;
+      if (typeof v === "string") return v;
+      if (v && typeof v === "object") return pickFirst(v, ["text", "label", "value"]) || "";
+      return "";
+    }
+
+    function buildRegionOptions(items) {
+      const regions = new Set();
+      items.forEach(it => {
+        const r = pickFirst(it, ["region"]);
+        if (r) regions.add(String(r).trim());
+      });
+      const sorted = Array.from(regions).sort((a,b) => a.localeCompare(b));
+      regionFilter.innerHTML = `<option value="">All regions</option>` + sorted.map(r => `<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join("");
+    }
+
     function render(list) {
-  out.innerHTML = "";
-  const frag = document.createDocumentFragment();
+      LAST_RENDERED = list;
+      out.innerHTML = "";
 
-  const capped = list.slice(0, 500);
+      const capped = list.slice(0, 500);
+      const frag = document.createDocumentFragment();
 
-  capped.forEach((item, idx) => {
-    const title = pickFirst(item, ["title", "name", "itineraryName", "cruiseName"]);
-    const region = pickFirst(item, ["region"]);
+      capped.forEach((item) => {
+        const title = pickFirst(item, ["title", "name", "itineraryName", "cruiseName"]);
+        const region = pickFirst(item, ["region"]);
+        const duration = normalizeDuration(item);
+        const journey = pickFirst(item, ["journeyText"]);
+        const url = pickFirst(item, ["viewDetailsUrl", "viewDetailsHref", "url", "link"]);
+        const img = pickFirst(item, ["imageUrl"]);
+        const dateRanges = Array.isArray(item.dateRanges) ? item.dateRanges : [];
 
-    // Fix: duration might be an object; handle both string and object cases
-    let durationVal = item.duration;
-    let duration = "";
-    if (typeof durationVal === "string") duration = durationVal;
-    else if (durationVal && typeof durationVal === "object") {
-      // try common object keys
-      duration = pickFirst(durationVal, ["text", "label", "value"]);
-      if (!duration) duration = ""; // don't show [object Object]
-    }
+        const safeUrl = (typeof url === "string" && url.startsWith("http")) ? url : "";
+        const safeImg = (typeof img === "string" && img.startsWith("http")) ? img : "";
 
-    // ✅ The important part: show all date ranges
-    const dateRanges = Array.isArray(item.dateRanges) ? item.dateRanges : [];
-    const datesTextFallback = pickFirst(item, ["dateRangeText", "date", "startDate", "sailDate", "departureDate"]);
-    const journey = pickFirst(item, ["journeyText"]);
-    const url = pickFirst(item, ["viewDetailsUrl", "viewDetailsHref", "url", "link"]);
-    const img = pickFirst(item, ["imageUrl"]);
+        const MAX_DATES_SHOWN = 8;
+        const hasManyDates = dateRanges.length > MAX_DATES_SHOWN;
+        const shownDates = hasManyDates ? dateRanges.slice(0, MAX_DATES_SHOWN) : dateRanges;
+        const hiddenDates = hasManyDates ? dateRanges.slice(MAX_DATES_SHOWN) : [];
 
-    const safeUrl = (typeof url === "string" && url.startsWith("http")) ? url : "";
-    const safeImg = (typeof img === "string" && img.startsWith("http")) ? img : "";
+        // Unique key for toggle that stays stable even when filtered
+        const toggleKey = safeUrl || (title + "|" + (journey || "") + "|" + region + "|" + duration);
 
-    const div = document.createElement("div");
-    div.className = "row";
+        const card = document.createElement("div");
+        card.className = "card";
 
-    // Build date chips / list
-    const MAX_DATES_SHOWN = 6;
-    const hasManyDates = dateRanges.length > MAX_DATES_SHOWN;
-    const shownDates = hasManyDates ? dateRanges.slice(0, MAX_DATES_SHOWN) : dateRanges;
-    const hiddenDates = hasManyDates ? dateRanges.slice(MAX_DATES_SHOWN) : [];
-
-    const datesHtml = (dateRanges.length > 0)
-      ? `
-        <div class="meta" style="margin-top:8px;">
-          <div style="font-weight:600; opacity:.9; margin-bottom:4px;">Available dates:</div>
-          <div style="display:flex; flex-wrap:wrap; gap:6px;">
-            ${shownDates.map(d => `<span style="border:1px solid #e5e5e5; padding:4px 8px; border-radius:999px; font-size:13px;">${escapeHtml(d)}</span>`).join("")}
-            ${hasManyDates ? `<button data-toggle="${idx}" style="border:1px solid #ddd; background:#fff; padding:4px 8px; border-radius:999px; font-size:13px; cursor:pointer;">Show all (${dateRanges.length})</button>` : ""}
-          </div>
-          ${hasManyDates ? `
-            <div id="more-${idx}" style="display:none; margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">
-              ${hiddenDates.map(d => `<span style="border:1px solid #e5e5e5; padding:4px 8px; border-radius:999px; font-size:13px;">${escapeHtml(d)}</span>`).join("")}
+        card.innerHTML = `
+          <div class="card-inner">
+            <div class="thumb">
+              ${safeImg ? `<img src="${escapeHtml(safeImg)}" alt="">` : ``}
             </div>
-          ` : ``}
-        </div>
-      `
-      : (datesTextFallback ? `<div class="meta" style="margin-top:8px;"><b>Dates:</b> ${escapeHtml(datesTextFallback)}</div>` : "");
 
-    div.innerHTML = `
-      <div style="display:flex; gap:12px; align-items:flex-start;">
-        ${safeImg ? `<img src="${escapeHtml(safeImg)}" alt="" style="width:120px;height:auto;border-radius:10px;border:1px solid #eee;">` : ""}
-        <div style="flex:1;">
-          <div><b>${escapeHtml(title || "Cruise")}</b></div>
+            <div class="content">
+              <div class="headline">
+                <div style="min-width:0;">
+                  <div class="name">${escapeHtml(title || "Cruise")}</div>
+                  <div class="meta">
+                    ${region ? `<span class="tag">🌍 ${escapeHtml(region)}</span>` : ``}
+                    ${duration ? `<span class="tag">⏱️ ${escapeHtml(duration)}</span>` : ``}
+                    ${dateRanges.length ? `<span class="tag">📅 ${dateRanges.length} date${dateRanges.length===1?"":"s"}</span>` : `<span class="tag">📅 No dates</span>`}
+                  </div>
+                </div>
 
-          ${safeUrl ? `<div style="margin-top:6px;"><a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener">Open View Details</a></div>` : ""}
+                ${safeUrl ? `<a class="link" href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener">Open View Details ↗</a>` : ``}
+              </div>
 
-          <div class="meta">
-            ${region ? `${escapeHtml(region)} · ` : ""}
-            ${duration ? `${escapeHtml(duration)} · ` : ""}
+              ${journey ? `<div class="meta" style="margin-top:8px;">🧭 ${escapeHtml(journey)}</div>` : ``}
+
+              <div class="dates-block">
+                <div class="dates-title">
+                  <span>Available dates</span>
+                  ${hasManyDates ? `<span style="color:rgba(255,255,255,0.55);">showing ${shownDates.length} of ${dateRanges.length}</span>` : ``}
+                </div>
+
+                <div class="chips">
+                  ${shownDates.map(d => `<span class="chip">${escapeHtml(d)}</span>`).join("")}
+                  ${hasManyDates ? `<span class="chip more" data-toggle="${escapeHtml(toggleKey)}">Show all (${dateRanges.length})</span>` : ``}
+                </div>
+
+                ${hasManyDates ? `
+                  <div class="chips" id="more-${cssSafe(toggleKey)}" style="display:none; margin-top:10px;">
+                    ${hiddenDates.map(d => `<span class="chip">${escapeHtml(d)}</span>`).join("")}
+                  </div>
+                ` : ``}
+              </div>
+            </div>
           </div>
+        `;
 
-          ${journey ? `<div class="meta">${escapeHtml(journey)}</div>` : ""}
+        frag.appendChild(card);
+      });
 
-          ${datesHtml}
-        </div>
-      </div>
-    `;
+      out.appendChild(frag);
 
-    frag.appendChild(div);
-  });
+      // status + footer counts
+      const shown = Math.min(list.length, 500);
+      status.textContent = `Loaded ${DATA.length} items · Showing ${shown} of ${list.length} match${list.length===1?"":"es"}`;
+      countNote.textContent = `Matches: ${list.length} (rendered: ${shown})`;
 
-  out.appendChild(frag);
-  status.textContent = `Showing ${capped.length} of ${list.length} matches`;
+      // Wire toggles (stable even when filtered)
+      out.querySelectorAll("[data-toggle]").forEach(el => {
+        el.addEventListener("click", () => {
+          const key = el.getAttribute("data-toggle");
+          const more = document.getElementById(`more-${cssSafe(key)}`);
+          if (!more) return;
 
-  // Wire up "Show all" toggles
-  out.querySelectorAll("button[data-toggle]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const i = btn.getAttribute("data-toggle");
-      const more = document.getElementById(`more-${i}`);
-      if (!more) return;
-
-      const isHidden = more.style.display === "none";
-      more.style.display = isHidden ? "flex" : "none";
-      btn.textContent = isHidden ? "Hide extra dates" : `Show all (${(DATA[i]?.dateRanges?.length) ?? ""})`;
-    });
-  });
-}
-
-
-    function filter() {
-      const needle = q.value.trim().toLowerCase();
-      if (!needle) return render(DATA);
-
-      const filtered = DATA.filter(item => textOf(item).includes(needle));
-      render(filtered);
+          const isHidden = more.style.display === "none";
+          more.style.display = isHidden ? "flex" : "none";
+          el.textContent = isHidden ? "Hide extra dates" : el.textContent.replace("Hide extra dates", "");
+          if (!isHidden) {
+            // restore original label
+            const total = (DATA.find(x => (pickFirst(x, ["viewDetailsUrl","url","link"]) || (pickFirst(x, ["title"]) + "|" + pickFirst(x, ["journeyText"]) + "|" + pickFirst(x, ["region"]) + "|" + normalizeDuration(x))) === key)?.dateRanges?.length) || "";
+            el.textContent = total ? `Show all (${total})` : "Show all";
+          }
+        });
+      });
     }
 
-    q.addEventListener("input", filter);
+    function cssSafe(s) {
+      // make a string safe for use in an element id
+      return String(s).replace(/[^a-zA-Z0-9\-_:.]/g, "_");
+    }
+
+    function applyFilters() {
+      const needle = q.value.trim().toLowerCase();
+      const region = regionFilter.value;
+      const datesMode = datesFilter.value;
+
+      let list = DATA;
+
+      if (region) {
+        list = list.filter(it => String(pickFirst(it, ["region"]) || "").trim() === region);
+      }
+
+      if (datesMode === "hasDates") {
+        list = list.filter(it => Array.isArray(it.dateRanges) && it.dateRanges.length > 0);
+      } else if (datesMode === "noDates") {
+        list = list.filter(it => !(Array.isArray(it.dateRanges) && it.dateRanges.length > 0));
+      }
+
+      if (needle) {
+        list = list.filter(it => textOf(it).includes(needle));
+      }
+
+      render(list);
+    }
+
+    q.addEventListener("input", applyFilters);
+    regionFilter.addEventListener("change", applyFilters);
+    datesFilter.addEventListener("change", applyFilters);
 
     loadBtn.addEventListener("click", async () => {
       try {
         status.textContent = "Loading…";
 
+        // IMPORTANT: put cruiseDataNew.json in the SAME folder as this index.html
         const res = await fetch("./cruiseDataNew.json", { cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status} (couldn't find cruiseDataNew.json)`);
 
@@ -181,17 +584,24 @@
           const firstArrayKey = raw && typeof raw === "object"
             ? Object.keys(raw).find(k => Array.isArray(raw[k]))
             : null;
-
           if (firstArrayKey) DATA = raw[firstArrayKey];
           else throw new Error("Loaded JSON but couldn't find an array (expected raw.items).");
         }
 
+        // enable controls
         q.disabled = false;
-        q.value = "";
-        q.focus();
-        render(DATA);
+        regionFilter.disabled = false;
+        datesFilter.disabled = false;
 
-        status.textContent = `Loaded ${DATA.length} items`;
+        // build filters
+        buildRegionOptions(DATA);
+
+        q.value = "";
+        regionFilter.value = "";
+        datesFilter.value = "";
+        q.focus();
+
+        render(DATA);
       } catch (e) {
         status.textContent = `Failed to load JSON: ${e.message}`;
       }
@@ -199,4 +609,3 @@
   </script>
 </body>
 </html>
-
