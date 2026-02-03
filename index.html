@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Cruise Data Viewer</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 16px; }
+    input { width: 100%; padding: 10px; font-size: 16px; margin: 12px 0; }
+    .row { padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin: 8px 0; }
+    .meta { opacity: 0.8; font-size: 14px; margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <h2>Cruise Data</h2>
+
+  <div style="margin-bottom:10px;">
+    <button id="load">Load JSON</button>
+    <span id="status" style="margin-left:10px;opacity:.8;"></span>
+  </div>
+
+  <input id="q" placeholder="Search anything (ship, destination, dates, ports)..." disabled />
+  <div id="out"></div>
+
+<script>
+  // Put your RAW JSON URL here:
+  const JSON_URL = "PASTE_RAW_JSON_URL_HERE";
+
+  let DATA = [];
+
+  const loadBtn = document.getElementById("load");
+  const q = document.getElementById("q");
+  const out = document.getElementById("out");
+  const status = document.getElementById("status");
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[c]));
+  }
+
+  function textOf(item) { return JSON.stringify(item).toLowerCase(); }
+
+  function render(list) {
+    out.innerHTML = "";
+    const frag = document.createDocumentFragment();
+
+    list.slice(0, 500).forEach(item => {
+      const url = item.viewDetailsUrl || item.view_details_url || item.url || item.link || null;
+      const title = item.title || item.name || item.itineraryName || item.cruiseName || "Cruise";
+      const dates = item.date || item.startDate || item.sailDate || item.departureDate || "";
+
+      const safeUrl = (typeof url === "string" && url.startsWith("http")) ? url : null;
+
+      const div = document.createElement("div");
+      div.className = "row";
+      div.innerHTML = `
+        <div><b>${escapeHtml(String(title))}</b></div>
+        ${safeUrl ? `<div><a href="${safeUrl}" target="_blank" rel="noopener">Open View Details</a></div>` : ""}
+        <div class="meta">${escapeHtml(String(dates))}</div>
+      `;
+      frag.appendChild(div);
+    });
+
+    out.appendChild(frag);
+    status.textContent = `Showing ${Math.min(list.length, 500)} of ${list.length} matches`;
+  }
+
+  function filter() {
+    const needle = q.value.trim().toLowerCase();
+    if (!needle) return render(DATA);
+    const filtered = DATA.filter(item => textOf(item).includes(needle));
+    render(filtered);
+  }
+
+  q.addEventListener("input", filter);
+
+  loadBtn.addEventListener("click", async () => {
+    try {
+      status.textContent = "Loading…";
+      const res = await fetch(JSON_URL, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      DATA = await res.json();
+      q.disabled = false;
+      q.focus();
+      render(DATA);
+      status.textContent = `Loaded ${DATA.length} items`;
+    } catch (e) {
+      status.textContent = `Failed to load JSON: ${e.message}`;
+    }
+  });
+</script>
+</body>
+</html>
