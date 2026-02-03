@@ -5,15 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Cruise Data Viewer</title>
   <style>
-    body { font-family: system-ui, sans-serif; padding: 16px; max-width: 1000px; margin: 0 auto; }
+    body { font-family: system-ui, sans-serif; padding: 16px; max-width: 1100px; margin: 0 auto; }
     h2 { margin: 0 0 10px 0; }
     input { width: 100%; padding: 10px; font-size: 16px; margin: 12px 0; box-sizing: border-box; }
     button { padding: 8px 12px; font-size: 14px; cursor: pointer; }
-    .row { padding: 10px; border: 1px solid #ddd; border-radius: 10px; margin: 8px 0; }
+    .row { padding: 12px; border: 1px solid #ddd; border-radius: 10px; margin: 10px 0; }
     .meta { opacity: 0.8; font-size: 14px; margin-top: 6px; }
     .topbar { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap: wrap; }
-    .status { opacity:.8; }
+    .status { opacity:.85; }
     .hint { opacity:.7; font-size: 13px; margin-top: 2px; }
+    a { text-decoration: none; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -62,20 +64,38 @@
       const capped = list.slice(0, 500);
 
       capped.forEach(item => {
-        // Try common field names; adjust if your JSON uses different ones.
-        const url = pickFirst(item, ["viewDetailsUrl", "view_details_url", "view_details", "url", "link"]);
-        const title = pickFirst(item, ["title", "name", "itineraryName", "cruiseName", "itinerary_title"]);
-        const dates = pickFirst(item, ["date", "startDate", "sailDate", "departureDate", "start", "depart"]);
+        // Your JSON fields (plus fallbacks)
+        const title = pickFirst(item, ["title", "name", "itineraryName", "cruiseName"]);
+        const region = pickFirst(item, ["region"]);
+        const duration = pickFirst(item, ["duration"]);
+        const dates = pickFirst(item, ["dateRangeText", "date", "startDate", "sailDate", "departureDate"]);
+        const journey = pickFirst(item, ["journeyText"]);
+        const url = pickFirst(item, ["viewDetailsUrl", "viewDetailsHref", "url", "link"]);
+        const img = pickFirst(item, ["imageUrl"]);
 
         const safeUrl = (typeof url === "string" && url.startsWith("http")) ? url : "";
+        const safeImg = (typeof img === "string" && img.startsWith("http")) ? img : "";
 
         const div = document.createElement("div");
         div.className = "row";
 
         div.innerHTML = `
-          <div><b>${escapeHtml(title || "Cruise")}</b></div>
-          ${safeUrl ? `<div><a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener">Open View Details</a></div>` : `<div class="meta">No link found on this item</div>`}
-          ${dates ? `<div class="meta">${escapeHtml(dates)}</div>` : ``}
+          <div style="display:flex; gap:12px; align-items:flex-start;">
+            ${safeImg ? `<img src="${escapeHtml(safeImg)}" alt="" style="width:120px;height:auto;border-radius:10px;border:1px solid #eee;">` : ""}
+            <div style="flex:1;">
+              <div><b>${escapeHtml(title || "Cruise")}</b></div>
+
+              ${safeUrl ? `<div style="margin-top:6px;"><a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener">Open View Details</a></div>` : ""}
+
+              <div class="meta">
+                ${region ? `${escapeHtml(region)} · ` : ""}
+                ${duration ? `${escapeHtml(duration)} · ` : ""}
+                ${dates ? `${escapeHtml(dates)}` : ""}
+              </div>
+
+              ${journey ? `<div class="meta">${escapeHtml(journey)}</div>` : ""}
+            </div>
+          </div>
         `;
 
         frag.appendChild(div);
@@ -89,7 +109,6 @@
       const needle = q.value.trim().toLowerCase();
       if (!needle) return render(DATA);
 
-      // Simple “search everything” filter
       const filtered = DATA.filter(item => textOf(item).includes(needle));
       render(filtered);
     }
@@ -100,18 +119,22 @@
       try {
         status.textContent = "Loading…";
 
-        // IMPORTANT: relative path so it works on GitHub Pages project sites
-        // Put cruiseDataNew.json in the same folder as this index.html
         const res = await fetch("./cruiseDataNew.json", { cache: "no-store" });
-
         if (!res.ok) throw new Error(`HTTP ${res.status} (couldn't find cruiseDataNew.json)`);
 
-        DATA = await res.json();
+        const raw = await res.json();
 
-        if (!Array.isArray(DATA)) {
-          // If your JSON is an object with an array inside, you can adjust this:
-          // e.g. DATA = DATA.items; or DATA = DATA.results;
-          throw new Error("JSON loaded, but it is not a top-level array. If your file is an object, tell me the key that contains the array.");
+        if (Array.isArray(raw)) {
+          DATA = raw;
+        } else if (raw && Array.isArray(raw.items)) {
+          DATA = raw.items;
+        } else {
+          const firstArrayKey = raw && typeof raw === "object"
+            ? Object.keys(raw).find(k => Array.isArray(raw[k]))
+            : null;
+
+          if (firstArrayKey) DATA = raw[firstArrayKey];
+          else throw new Error("Loaded JSON but couldn't find an array (expected raw.items).");
         }
 
         q.disabled = false;
