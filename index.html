@@ -58,52 +58,101 @@
     }
 
     function render(list) {
-      out.innerHTML = "";
-      const frag = document.createDocumentFragment();
+  out.innerHTML = "";
+  const frag = document.createDocumentFragment();
 
-      const capped = list.slice(0, 500);
+  const capped = list.slice(0, 500);
 
-      capped.forEach(item => {
-        // Your JSON fields (plus fallbacks)
-        const title = pickFirst(item, ["title", "name", "itineraryName", "cruiseName"]);
-        const region = pickFirst(item, ["region"]);
-        const duration = pickFirst(item, ["duration"]);
-        const dates = pickFirst(item, ["dateRangeText", "date", "startDate", "sailDate", "departureDate"]);
-        const journey = pickFirst(item, ["journeyText"]);
-        const url = pickFirst(item, ["viewDetailsUrl", "viewDetailsHref", "url", "link"]);
-        const img = pickFirst(item, ["imageUrl"]);
+  capped.forEach((item, idx) => {
+    const title = pickFirst(item, ["title", "name", "itineraryName", "cruiseName"]);
+    const region = pickFirst(item, ["region"]);
 
-        const safeUrl = (typeof url === "string" && url.startsWith("http")) ? url : "";
-        const safeImg = (typeof img === "string" && img.startsWith("http")) ? img : "";
-
-        const div = document.createElement("div");
-        div.className = "row";
-
-        div.innerHTML = `
-          <div style="display:flex; gap:12px; align-items:flex-start;">
-            ${safeImg ? `<img src="${escapeHtml(safeImg)}" alt="" style="width:120px;height:auto;border-radius:10px;border:1px solid #eee;">` : ""}
-            <div style="flex:1;">
-              <div><b>${escapeHtml(title || "Cruise")}</b></div>
-
-              ${safeUrl ? `<div style="margin-top:6px;"><a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener">Open View Details</a></div>` : ""}
-
-              <div class="meta">
-                ${region ? `${escapeHtml(region)} · ` : ""}
-                ${duration ? `${escapeHtml(duration)} · ` : ""}
-                ${dates ? `${escapeHtml(dates)}` : ""}
-              </div>
-
-              ${journey ? `<div class="meta">${escapeHtml(journey)}</div>` : ""}
-            </div>
-          </div>
-        `;
-
-        frag.appendChild(div);
-      });
-
-      out.appendChild(frag);
-      status.textContent = `Showing ${capped.length} of ${list.length} matches`;
+    // Fix: duration might be an object; handle both string and object cases
+    let durationVal = item.duration;
+    let duration = "";
+    if (typeof durationVal === "string") duration = durationVal;
+    else if (durationVal && typeof durationVal === "object") {
+      // try common object keys
+      duration = pickFirst(durationVal, ["text", "label", "value"]);
+      if (!duration) duration = ""; // don't show [object Object]
     }
+
+    // ✅ The important part: show all date ranges
+    const dateRanges = Array.isArray(item.dateRanges) ? item.dateRanges : [];
+    const datesTextFallback = pickFirst(item, ["dateRangeText", "date", "startDate", "sailDate", "departureDate"]);
+    const journey = pickFirst(item, ["journeyText"]);
+    const url = pickFirst(item, ["viewDetailsUrl", "viewDetailsHref", "url", "link"]);
+    const img = pickFirst(item, ["imageUrl"]);
+
+    const safeUrl = (typeof url === "string" && url.startsWith("http")) ? url : "";
+    const safeImg = (typeof img === "string" && img.startsWith("http")) ? img : "";
+
+    const div = document.createElement("div");
+    div.className = "row";
+
+    // Build date chips / list
+    const MAX_DATES_SHOWN = 6;
+    const hasManyDates = dateRanges.length > MAX_DATES_SHOWN;
+    const shownDates = hasManyDates ? dateRanges.slice(0, MAX_DATES_SHOWN) : dateRanges;
+    const hiddenDates = hasManyDates ? dateRanges.slice(MAX_DATES_SHOWN) : [];
+
+    const datesHtml = (dateRanges.length > 0)
+      ? `
+        <div class="meta" style="margin-top:8px;">
+          <div style="font-weight:600; opacity:.9; margin-bottom:4px;">Available dates:</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            ${shownDates.map(d => `<span style="border:1px solid #e5e5e5; padding:4px 8px; border-radius:999px; font-size:13px;">${escapeHtml(d)}</span>`).join("")}
+            ${hasManyDates ? `<button data-toggle="${idx}" style="border:1px solid #ddd; background:#fff; padding:4px 8px; border-radius:999px; font-size:13px; cursor:pointer;">Show all (${dateRanges.length})</button>` : ""}
+          </div>
+          ${hasManyDates ? `
+            <div id="more-${idx}" style="display:none; margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">
+              ${hiddenDates.map(d => `<span style="border:1px solid #e5e5e5; padding:4px 8px; border-radius:999px; font-size:13px;">${escapeHtml(d)}</span>`).join("")}
+            </div>
+          ` : ``}
+        </div>
+      `
+      : (datesTextFallback ? `<div class="meta" style="margin-top:8px;"><b>Dates:</b> ${escapeHtml(datesTextFallback)}</div>` : "");
+
+    div.innerHTML = `
+      <div style="display:flex; gap:12px; align-items:flex-start;">
+        ${safeImg ? `<img src="${escapeHtml(safeImg)}" alt="" style="width:120px;height:auto;border-radius:10px;border:1px solid #eee;">` : ""}
+        <div style="flex:1;">
+          <div><b>${escapeHtml(title || "Cruise")}</b></div>
+
+          ${safeUrl ? `<div style="margin-top:6px;"><a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener">Open View Details</a></div>` : ""}
+
+          <div class="meta">
+            ${region ? `${escapeHtml(region)} · ` : ""}
+            ${duration ? `${escapeHtml(duration)} · ` : ""}
+          </div>
+
+          ${journey ? `<div class="meta">${escapeHtml(journey)}</div>` : ""}
+
+          ${datesHtml}
+        </div>
+      </div>
+    `;
+
+    frag.appendChild(div);
+  });
+
+  out.appendChild(frag);
+  status.textContent = `Showing ${capped.length} of ${list.length} matches`;
+
+  // Wire up "Show all" toggles
+  out.querySelectorAll("button[data-toggle]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const i = btn.getAttribute("data-toggle");
+      const more = document.getElementById(`more-${i}`);
+      if (!more) return;
+
+      const isHidden = more.style.display === "none";
+      more.style.display = isHidden ? "flex" : "none";
+      btn.textContent = isHidden ? "Hide extra dates" : `Show all (${(DATA[i]?.dateRanges?.length) ?? ""})`;
+    });
+  });
+}
+
 
     function filter() {
       const needle = q.value.trim().toLowerCase();
@@ -150,3 +199,4 @@
   </script>
 </body>
 </html>
+
