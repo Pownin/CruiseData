@@ -1,30 +1,4 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Cruise Data Viewer</title>
-  <style>
-    body { font-family: system-ui, sans-serif; padding: 16px; }
-    input { width: 100%; padding: 10px; font-size: 16px; margin: 12px 0; }
-    .row { padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin: 8px 0; }
-    .meta { opacity: 0.8; font-size: 14px; margin-top: 6px; }
-  </style>
-</head>
-<body>
-  <h2>Cruise Data</h2>
-
-  <div style="margin-bottom:10px;">
-    <button id="load">Load JSON</button>
-    <span id="status" style="margin-left:10px;opacity:.8;"></span>
-  </div>
-
-  <input id="q" placeholder="Search anything (ship, destination, dates, ports)..." disabled />
-  <div id="out"></div>
-
 <script>
-  // Put your RAW JSON URL here:
-  const JSON_URL = "PASTE_RAW_JSON_URL_HERE";
-
   let DATA = [];
 
   const loadBtn = document.getElementById("load");
@@ -75,19 +49,21 @@
   loadBtn.addEventListener("click", async () => {
     try {
       status.textContent = "Loading…";
-      const JSON_URL = "https://pownin.github.io/windstar-viewer/CruiseData/cruiseDataNew.json";
+
+      // IMPORTANT: relative path so it works on GitHub Pages project sites
+      const res = await fetch("./cruiseDataNew.json", { cache: "no-store" });
+
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
       DATA = await res.json();
+
       q.disabled = false;
       q.focus();
       render(DATA);
+
       status.textContent = `Loaded ${DATA.length} items`;
     } catch (e) {
       status.textContent = `Failed to load JSON: ${e.message}`;
     }
   });
 </script>
-</body>
-</html>
-
-
