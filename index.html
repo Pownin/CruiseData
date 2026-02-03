@@ -75,7 +75,7 @@
   loadBtn.addEventListener("click", async () => {
     try {
       status.textContent = "Loading…";
-      const res = await fetch(JSON_URL, { cache: "no-store" });
+      const JSON_URL = "https://pownin.github.io/windstar-viewer/cruiseDataNew.json";
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       DATA = await res.json();
       q.disabled = false;
@@ -89,3 +89,4 @@
 </script>
 </body>
 </html>
+
