@@ -695,7 +695,7 @@
       applyFilters();
     });
 
-    function buildDatesHtml(dateRanges, toggleKey) {
+    function buildDatesHtml(dateRanges, idSafe) {
       const total = dateRanges.length;
       if (!total) return `<div class="datePanel"><div class="dateSummary">No dates</div></div>`;
 
@@ -703,7 +703,7 @@
       const extra = dateRanges.slice(MAX_PREVIEW);
       const hasExtra = extra.length > 0;
 
-      const moreId = `more-${cssSafe(toggleKey)}`;
+      const moreId = `more-${idSafe}`;
 
       const previewHtml = `
         <div class="dateGrid">
@@ -718,7 +718,7 @@
       ` : "";
 
       const btnHtml = hasExtra
-        ? `<button class="dateBtn" data-toggle="${escapeHtml(toggleKey)}" data-total="${total}" data-open="0">
+        ? `<button class="dateBtn" data-moreid="${escapeHtml(moreId)}" data-total="${total}" aria-expanded="false">
              Show all (${total})
            </button>`
         : "";
@@ -757,6 +757,8 @@
           safeUrl ||
           (String(title||"") + "|" + String(journey||"") + "|" + String(region||"") + "|" + String(duration||""));
 
+        const idSafe = cssSafe(toggleKey);
+
         const card = document.createElement("div");
         card.className = "card";
 
@@ -785,7 +787,7 @@
 
               <div class="dates-block">
                 <div class="dates-title"><span>Available dates</span></div>
-                ${buildDatesHtml(dateRanges, toggleKey)}
+                ${buildDatesHtml(dateRanges, idSafe)}
               </div>
             </div>
           </div>
@@ -799,17 +801,18 @@
       const shown = Math.min(list.length, 500);
       countNote.textContent = `Matches: ${list.length} (rendered: ${shown})`;
 
-      out.querySelectorAll("[data-toggle]").forEach(btn => {
+      out.querySelectorAll("[data-moreid]").forEach(btn => {
         btn.addEventListener("click", () => {
-          const key = btn.getAttribute("data-toggle");
-          const total = btn.getAttribute("data-total") || "";
-          const more = document.getElementById(`more-${cssSafe(key)}`);
+          const moreId = btn.getAttribute("data-moreid");
+          if (!moreId) return;
+          const more = document.getElementById(moreId);
           if (!more) return;
 
-          const isOpen = btn.getAttribute("data-open") === "1";
-          // if open => hide. if closed => show
+          const isOpen = btn.getAttribute("aria-expanded") === "true";
           more.hidden = isOpen;
-          btn.setAttribute("data-open", isOpen ? "0" : "1");
+          btn.setAttribute("aria-expanded", isOpen ? "false" : "true");
+
+          const total = btn.getAttribute("data-total") || "";
           btn.textContent = isOpen ? `Show all (${total})` : "Hide extra dates";
         });
       });
