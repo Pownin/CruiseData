@@ -7,12 +7,9 @@
 
   <style>
     :root{
-      --bgTop: #240a45; 
-      --bgMid: #120627;  
-      --bgBot: #05040c; 
-
-      --hexA: rgba(192,132,252,0.20);
-      --hexB: rgba(244,114,182,0.10);
+      --bgTop: #240a45;
+      --bgMid: #120627;
+      --bgBot: #05040c;
 
       --text: rgba(255,255,255,0.93);
       --muted: rgba(255,255,255,0.72);
@@ -29,7 +26,6 @@
       --bad:#fb7185;
 
       --cardRadius: 18px;
-
       --dateMinCol: 200px;
     }
 
@@ -40,7 +36,6 @@
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       color: var(--text);
       min-height:100vh;
-
       background: linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 45%, var(--bgBot) 100%);
       position: relative;
       overflow-x: hidden;
@@ -52,22 +47,19 @@
       inset: 0;
       pointer-events:none;
       z-index: 0;
-    
+
       background:
-        radial-gradient(1000px 600px at 20% -10%, rgba(192,132,252,0.22), transparent 55%),
-        radial-gradient(900px 600px at 90% 5%, rgba(244,114,182,0.12), transparent 55%),
+        radial-gradient(1000px 600px at 20% -10%, rgba(192,132,252,0.22), transparent 80%),
+        radial-gradient(900px 600px at 90% 5%, rgba(244,114,182,0.12), transparent 80%),
         linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.35)),
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='104' viewBox='0 0 120 104'%3E%3Cg fill='none' stroke='%23b58cff' stroke-opacity='0.28' stroke-width='1'%3E%3Cpath d='M30 2 L60 19 L60 47 L30 64 L0 47 L0 19 Z'/%3E%3Cpath d='M90 2 L120 19 L120 47 L90 64 L60 47 L60 19 Z'/%3E%3Cpath d='M60 47 L90 64 L90 92 L60 109 L30 92 L30 64 Z'/%3E%3Cpath d='M0 47 L30 64 L30 92 L0 109 L-30 92 L-30 64 Z'/%3E%3Cpath d='M120 47 L150 64 L150 92 L120 109 L90 92 L90 64 Z'/%3E%3C/g%3E%3C/svg%3E");
-    
       background-repeat: no-repeat, no-repeat, no-repeat, repeat;
       background-size: auto, auto, auto, 120px 104px;
-    
-      /* keep it subtle */
+
       opacity: 0.85;
       mix-blend-mode: screen;
       filter: saturate(1.05);
     }
-
 
     .appbar, .wrap { position: relative; z-index: 1; }
 
@@ -252,11 +244,7 @@
       margin-bottom: 10px;
       line-height:1.35;
     }
-    .shipList{
-      display:flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .shipList{ display:flex; flex-direction: column; gap: 8px; }
     .shipItem{
       display:flex;
       align-items:center;
@@ -273,12 +261,7 @@
       border-color: rgba(192,132,252,0.35);
       background: rgba(255,255,255,0.06);
     }
-    .shipLeft{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      min-width: 0;
-    }
+    .shipLeft{ display:flex; align-items:center; gap: 10px; min-width: 0; }
     .shipName{
       font-weight: 700;
       font-size: 13px;
@@ -295,11 +278,7 @@
       border-radius: 999px;
       white-space: nowrap;
     }
-    .shipItem input{
-      width: 18px;
-      height: 18px;
-      accent-color: rgb(192,132,252);
-    }
+    .shipItem input{ width: 18px; height: 18px; accent-color: rgb(192,132,252); }
 
     .hint{
       color: var(--muted);
@@ -308,12 +287,7 @@
       line-height: 1.35;
     }
 
-    .grid{
-      display:flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 10px;
-    }
+    .grid{ display:flex; flex-direction: column; gap: 12px; margin-top: 10px; }
 
     .card{
       border: 1px solid rgba(255,255,255,0.10);
@@ -330,12 +304,7 @@
       box-shadow: var(--shadow);
     }
 
-    .card-inner{
-      display:flex;
-      gap: 14px;
-      padding: 14px;
-      align-items:flex-start;
-    }
+    .card-inner{ display:flex; gap: 14px; padding: 14px; align-items:flex-start; }
 
     .thumb{
       width: 138px;
@@ -466,7 +435,6 @@
       background: rgba(244,114,182,0.20);
       transform: translateY(-1px);
     }
-    .dateBtn:active{ transform: translateY(0); }
 
     .dateGrid{
       display:grid;
@@ -607,8 +575,7 @@
     const shipClear = document.getElementById("shipClear");
     const shipCount = document.getElementById("shipCount");
 
-    const MAX_PREVIEW = 10;       
-    const AUTO_COLLAPSE_OVER = 10;
+    const MAX_PREVIEW = 10;
 
     function setStatus(kind, msg){
       status.textContent = msg;
@@ -731,31 +698,31 @@
     function buildDatesHtml(dateRanges, toggleKey) {
       const total = dateRanges.length;
       if (!total) return `<div class="datePanel"><div class="dateSummary">No dates</div></div>`;
-    
+
       const preview = dateRanges.slice(0, MAX_PREVIEW);
       const extra = dateRanges.slice(MAX_PREVIEW);
       const hasExtra = extra.length > 0;
-    
+
       const moreId = `more-${cssSafe(toggleKey)}`;
-    
+
       const previewHtml = `
         <div class="dateGrid">
           ${preview.map((d,i) => `<div class="dateCell"><span>${escapeHtml(d)}</span><small>#${i+1}</small></div>`).join("")}
         </div>
       `;
-    
+
       const extraHtml = hasExtra ? `
         <div class="dateGrid" id="${moreId}" hidden style="margin-top:10px;">
           ${extra.map((d,i) => `<div class="dateCell"><span>${escapeHtml(d)}</span><small>#${MAX_PREVIEW + i + 1}</small></div>`).join("")}
         </div>
       ` : "";
-    
+
       const btnHtml = hasExtra
         ? `<button class="dateBtn" data-toggle="${escapeHtml(toggleKey)}" data-total="${total}" data-open="0">
              Show all (${total})
            </button>`
         : "";
-    
+
       return `
         <div class="datePanel">
           <div class="dateTopRow">
@@ -786,7 +753,9 @@
         const safeUrl = (typeof url === "string" && url.startsWith("http")) ? url : "";
         const safeImg = (typeof img === "string" && img.startsWith("http")) ? img : "";
 
-        const toggleKey = safeUrl || (String(title||"") + "|" + String(journey||"") + "|" + String(region||"") + "|" + String(duration||""));
+        const toggleKey =
+          safeUrl ||
+          (String(title||"") + "|" + String(journey||"") + "|" + String(region||"") + "|" + String(duration||""));
 
         const card = document.createElement("div");
         card.className = "card";
@@ -815,9 +784,7 @@
               ${journey ? `<div class="meta" style="margin-top:8px;">🧭 ${escapeHtml(journey)}</div>` : ``}
 
               <div class="dates-block">
-                <div class="dates-title">
-                  <span>Available dates</span>
-                </div>
+                <div class="dates-title"><span>Available dates</span></div>
                 ${buildDatesHtml(dateRanges, toggleKey)}
               </div>
             </div>
@@ -833,19 +800,20 @@
       countNote.textContent = `Matches: ${list.length} (rendered: ${shown})`;
 
       out.querySelectorAll("[data-toggle]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const key = btn.getAttribute("data-toggle");
-        const total = btn.getAttribute("data-total") || "";
-        const more = document.getElementById(`more-${cssSafe(key)}`);
-        if (!more) return;
-    
-        const isOpen = btn.getAttribute("data-open") === "1";
-    
-        more.hidden = isOpen; // open -> hide, closed -> show
-        btn.setAttribute("data-open", isOpen ? "0" : "1");
-        btn.textContent = isOpen ? `Show all (${total})` : "Hide extra dates";
+        btn.addEventListener("click", () => {
+          const key = btn.getAttribute("data-toggle");
+          const total = btn.getAttribute("data-total") || "";
+          const more = document.getElementById(`more-${cssSafe(key)}`);
+          if (!more) return;
+
+          const isOpen = btn.getAttribute("data-open") === "1";
+          // if open => hide. if closed => show
+          more.hidden = isOpen;
+          btn.setAttribute("data-open", isOpen ? "0" : "1");
+          btn.textContent = isOpen ? `Show all (${total})` : "Hide extra dates";
+        });
       });
-    });
+    } 
 
     function applyFilters() {
       const needle = q.value.trim().toLowerCase();
@@ -921,5 +889,3 @@
   </script>
 </body>
 </html>
-
-
