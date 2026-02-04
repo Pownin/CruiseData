@@ -6,20 +6,21 @@
   <title>Cruise Data Viewer</title>
   <style>
     :root{
-      --bg0:#080611;
-      --bg1:#110a25;
+      --bg0:#070611;
+      --bg1:#120a28;
+
       --panel: rgba(255,255,255,0.06);
-      --panel2: rgba(255,255,255,0.085);
+      --panel2: rgba(255,255,255,0.09);
       --text: rgba(255,255,255,0.93);
       --muted: rgba(255,255,255,0.72);
       --muted2: rgba(255,255,255,0.55);
       --border: rgba(255,255,255,0.12);
-      --shadow: 0 16px 46px rgba(0,0,0,0.45);
-      --shadow2: 0 10px 26px rgba(0,0,0,0.30);
+      --shadow: 0 16px 46px rgba(0,0,0,0.48);
+      --shadow2: 0 10px 26px rgba(0,0,0,0.32);
 
       --accent:#c084fc;   /* purple */
       --accent2:#f472b6;  /* pink */
-      --accent3:#60a5fa;  /* blue (subtle) */
+      --accent3:#a78bfa;  /* softer purple */
 
       --good:#34d399;
       --warn:#fbbf24;
@@ -34,9 +35,9 @@
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
       color: var(--text);
       background:
-        radial-gradient(1100px 600px at 18% -10%, rgba(192,132,252,0.22), transparent 55%),
-        radial-gradient(900px 600px at 90% 10%, rgba(244,114,182,0.16), transparent 55%),
-        radial-gradient(900px 700px at 50% 120%, rgba(96,165,250,0.10), transparent 55%),
+        radial-gradient(1100px 650px at 18% -10%, rgba(192,132,252,0.26), transparent 55%),
+        radial-gradient(950px 650px at 90% 5%, rgba(244,114,182,0.16), transparent 55%),
+        radial-gradient(950px 750px at 50% 120%, rgba(167,139,250,0.12), transparent 55%),
         linear-gradient(180deg, var(--bg1), var(--bg0));
       min-height:100vh;
     }
@@ -54,7 +55,7 @@
       padding: 14px 16px;
       margin: 0 -16px 14px;
       backdrop-filter: blur(14px);
-      background: linear-gradient(to bottom, rgba(8,6,17,0.92), rgba(8,6,17,0.68));
+      background: linear-gradient(to bottom, rgba(7,6,17,0.92), rgba(7,6,17,0.68));
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
     .appbar-inner{
@@ -148,7 +149,7 @@
       background: linear-gradient(135deg, rgba(192,132,252,0.22), rgba(244,114,182,0.14));
     }
     .btn.primary:hover{
-      border-color: rgba(192,132,252,0.75);
+      border-color: rgba(192,132,252,0.78);
       background: linear-gradient(135deg, rgba(192,132,252,0.26), rgba(244,114,182,0.18));
     }
 
@@ -163,23 +164,10 @@
       min-width: min(560px, 92vw);
       position: relative;
     }
-    .field::after{
-      content:"";
-      position:absolute;
-      inset:-1px;
-      border-radius: 16px;
-      pointer-events:none;
-      opacity:0;
-      transition: opacity .15s ease;
-      background: linear-gradient(135deg, rgba(192,132,252,0.30), rgba(244,114,182,0.20));
-      filter: blur(10px);
-      z-index:-1;
-    }
     .field:focus-within{
       border-color: rgba(192,132,252,0.65);
       box-shadow: 0 0 0 4px rgba(192,132,252,0.14);
     }
-    .field:focus-within::after{ opacity: 1; }
 
     .field input{
       flex: 1;
@@ -206,6 +194,86 @@
       box-shadow: 0 0 0 4px rgba(192,132,252,0.12);
     }
     .select option{ color:#111; }
+
+    /* Ship dropdown */
+    .shipWrap{ position:relative; display:inline-block; }
+    .shipMenu{
+      position:absolute;
+      right:0;
+      top: calc(100% + 10px);
+      width: min(440px, 92vw);
+      max-height: 440px;
+      overflow:auto;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(16,10,36,0.92);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+      z-index: 60;
+      display:none;
+    }
+    .shipMenuTop{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .shipMenuHint{
+      color: rgba(255,255,255,0.65);
+      font-size: 12px;
+      margin-bottom: 10px;
+      line-height:1.35;
+    }
+    .shipList{
+      display:flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .shipItem{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+      cursor:pointer;
+      user-select:none;
+    }
+    .shipItem:hover{
+      border-color: rgba(192,132,252,0.35);
+      background: rgba(255,255,255,0.06);
+    }
+    .shipLeft{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .shipName{
+      font-weight: 700;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .shipCountBadge{
+      font-size: 12px;
+      color: rgba(255,255,255,0.70);
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+      padding: 3px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .shipItem input{
+      width: 18px;
+      height: 18px;
+      accent-color: rgb(192,132,252);
+    }
 
     .hint{
       color: var(--muted);
@@ -291,7 +359,7 @@
       border: 1px solid rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.055);
       font-size: 12px;
-      color: rgba(255,255,255,0.78);
+      color: rgba(255,255,255,0.86);
       white-space: nowrap;
     }
 
@@ -341,7 +409,7 @@
       padding: 6px 10px;
       border-radius: 999px;
       font-size: 12px;
-      color: rgba(255,255,255,0.86);
+      color: rgba(255,255,255,0.90);
     }
     .chip.more{
       cursor:pointer;
@@ -349,7 +417,7 @@
       background: rgba(244,114,182,0.16);
     }
     .chip.more:hover{
-      border-color: rgba(244,114,182,0.75);
+      border-color: rgba(244,114,182,0.78);
       background: rgba(244,114,182,0.20);
     }
 
@@ -391,14 +459,12 @@
         <div class="subtitle">
           <span class="pill"><span id="statusDot" class="dot warn"></span><span id="status">Loading…</span></span>
           <span class="pill"><span class="dot"></span>Shows first 500 matches for speed</span>
-          <span class="pill"><span class="dot"></span>Links open in new tab</span>
+          <span class="pill"><span class="dot"></span>Ship filter is multi-select</span>
         </div>
       </div>
 
       <div class="controls">
-        <button id="reload" class="btn primary" title="Reload cruiseDataNew.json">
-          ♻️ Reload
-        </button>
+        <button id="reload" class="btn primary" title="Reload cruiseDataNew.json">♻️ Reload</button>
 
         <div class="field" title="Search across all fields">
           🔎
@@ -408,6 +474,21 @@
         <select id="regionFilter" class="select" disabled>
           <option value="">All regions</option>
         </select>
+
+        <div class="shipWrap">
+          <button id="shipBtn" class="btn" disabled title="Filter by ship">
+            🚢 Ships <span id="shipCount" style="opacity:.75;"></span>
+          </button>
+
+          <div id="shipMenu" class="shipMenu">
+            <div class="shipMenuTop">
+              <div style="font-weight:800;">Filter by ship</div>
+              <button id="shipClear" class="btn" type="button" style="padding:8px 10px;">Clear</button>
+            </div>
+            <div class="shipMenuHint">Pick one or more ships. Results update instantly.</div>
+            <div id="shipList" class="shipList"></div>
+          </div>
+        </div>
 
         <select id="datesFilter" class="select" disabled>
           <option value="">All sailings</option>
@@ -420,8 +501,8 @@
 
   <div class="wrap">
     <div class="hint">
-      Tip: try searching “Tahiti”, “Star Collector”, a port name, or a month like “Feb”.
-      Use <span class="kbd">Ctrl</span> + <span class="kbd">F</span> if you want, but this search box is faster.
+      Tip: try “Star Breeze”, “Tahiti”, or a port name.
+      Use <span class="kbd">Ctrl</span> + <span class="kbd">F</span> if you want, but the search box is faster.
     </div>
 
     <div id="out" class="grid"></div>
@@ -435,6 +516,7 @@
   <script>
     let DATA = [];
     let LAST_RENDERED = [];
+    let SELECTED_SHIPS = new Set();
 
     const q = document.getElementById("q");
     const out = document.getElementById("out");
@@ -444,6 +526,12 @@
     const datesFilter = document.getElementById("datesFilter");
     const countNote = document.getElementById("countNote");
     const reloadBtn = document.getElementById("reload");
+
+    const shipBtn = document.getElementById("shipBtn");
+    const shipMenu = document.getElementById("shipMenu");
+    const shipList = document.getElementById("shipList");
+    const shipClear = document.getElementById("shipClear");
+    const shipCount = document.getElementById("shipCount");
 
     function setStatus(kind, msg){
       status.textContent = msg;
@@ -479,6 +567,18 @@
       return String(s).replace(/[^a-zA-Z0-9\-_:.]/g, "_");
     }
 
+    function getShipName(item){
+      const direct = pickFirst(item, ["ship", "shipName", "yacht", "vessel"]);
+      if (direct) return String(direct);
+
+      const jt = pickFirst(item, ["journeyText"]);
+      if (typeof jt === "string") {
+        const m = jt.match(/\bon\s+(Star\s+(Breeze|Legend|Pride|Explorer|Seeker)|Wind\s+(Spirit|Star|Surf))\b/i);
+        if (m) return m[0].replace(/^on\s+/i, "").trim();
+      }
+      return "Unknown";
+    }
+
     function buildRegionOptions(items) {
       const regions = new Set();
       items.forEach(it => {
@@ -490,6 +590,68 @@
         `<option value="">All regions</option>` +
         sorted.map(r => `<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join("");
     }
+
+    function updateShipBtnLabel(){
+      const n = SELECTED_SHIPS.size;
+      shipCount.textContent = n ? `(${n})` : "";
+    }
+
+    function buildShipOptions(items){
+      const counts = new Map();
+      items.forEach(it => {
+        const ship = getShipName(it) || "Unknown";
+        counts.set(ship, (counts.get(ship) || 0) + 1);
+      });
+
+      const ships = Array.from(counts.entries())
+        .sort((a,b) => a[0].localeCompare(b[0]));
+
+      shipList.innerHTML = ships.map(([name, count]) => {
+        const checked = SELECTED_SHIPS.has(name) ? "checked" : "";
+        return `
+          <label class="shipItem">
+            <span class="shipLeft">
+              <input type="checkbox" data-ship="${escapeHtml(name)}" ${checked}>
+              <span class="shipName">${escapeHtml(name)}</span>
+            </span>
+            <span class="shipCountBadge">${count}</span>
+          </label>
+        `;
+      }).join("");
+
+      updateShipBtnLabel();
+    }
+
+    function closeShipMenu(){ shipMenu.style.display = "none"; }
+
+    shipBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      shipMenu.style.display = (shipMenu.style.display === "none" || shipMenu.style.display === "") ? "block" : "none";
+    });
+
+    document.addEventListener("click", () => closeShipMenu());
+
+    shipMenu.addEventListener("click", (e) => e.stopPropagation());
+
+    shipList.addEventListener("change", (e) => {
+      const cb = e.target;
+      if (!(cb instanceof HTMLInputElement)) return;
+      const ship = cb.getAttribute("data-ship");
+      if (!ship) return;
+
+      if (cb.checked) SELECTED_SHIPS.add(ship);
+      else SELECTED_SHIPS.delete(ship);
+
+      updateShipBtnLabel();
+      applyFilters();
+    });
+
+    shipClear.addEventListener("click", () => {
+      SELECTED_SHIPS.clear();
+      updateShipBtnLabel();
+      shipList.querySelectorAll("input[type=checkbox]").forEach(x => x.checked = false);
+      applyFilters();
+    });
 
     function render(list) {
       LAST_RENDERED = list;
@@ -514,9 +676,10 @@
         const hasManyDates = dateRanges.length > MAX_DATES_SHOWN;
         const shownDates = hasManyDates ? dateRanges.slice(0, MAX_DATES_SHOWN) : dateRanges;
         const hiddenDates = hasManyDates ? dateRanges.slice(MAX_DATES_SHOWN) : [];
+        const autoCollapse = dateRanges.length > 15;
 
-        // stable key for toggles even when filtered
         const toggleKey = safeUrl || (String(title||"") + "|" + String(journey||"") + "|" + String(region||"") + "|" + String(duration||""));
+        const moreId = `more-${cssSafe(toggleKey)}`;
 
         const card = document.createElement("div");
         card.className = "card";
@@ -534,6 +697,7 @@
                   <div class="meta">
                     ${region ? `<span class="tag">🌍 ${escapeHtml(region)}</span>` : ``}
                     ${duration ? `<span class="tag">⏱️ ${escapeHtml(duration)}</span>` : ``}
+                    <span class="tag">🚢 ${escapeHtml(getShipName(item))}</span>
                     ${dateRanges.length ? `<span class="tag">📅 ${dateRanges.length} date${dateRanges.length===1?"":"s"}</span>` : `<span class="tag">📅 No dates</span>`}
                   </div>
                 </div>
@@ -551,11 +715,11 @@
 
                 <div class="chips">
                   ${shownDates.map(d => `<span class="chip">${escapeHtml(d)}</span>`).join("")}
-                  ${hasManyDates ? `<span class="chip more" data-toggle="${escapeHtml(toggleKey)}">Show all (${dateRanges.length})</span>` : ``}
+                  ${hasManyDates ? `<span class="chip more" data-toggle="${escapeHtml(toggleKey)}" data-total="${dateRanges.length}">${autoCollapse ? `Show all (${dateRanges.length})` : `Hide extra dates`}</span>` : ``}
                 </div>
 
                 ${hasManyDates ? `
-                  <div class="chips" id="more-${cssSafe(toggleKey)}" style="display:none; margin-top:10px;">
+                  <div class="chips" id="${moreId}" style="display:${autoCollapse ? "none" : "flex"}; margin-top:10px;">
                     ${hiddenDates.map(d => `<span class="chip">${escapeHtml(d)}</span>`).join("")}
                   </div>
                 ` : ``}
@@ -569,37 +733,19 @@
 
       out.appendChild(frag);
 
-      // counts
       const shown = Math.min(list.length, 500);
       countNote.textContent = `Matches: ${list.length} (rendered: ${shown})`;
 
-      // toggle wiring
       out.querySelectorAll("[data-toggle]").forEach(el => {
         el.addEventListener("click", () => {
           const key = el.getAttribute("data-toggle");
+          const total = el.getAttribute("data-total") || "";
           const more = document.getElementById(`more-${cssSafe(key)}`);
           if (!more) return;
 
           const isHidden = more.style.display === "none";
           more.style.display = isHidden ? "flex" : "none";
-          el.textContent = isHidden ? "Hide extra dates" : el.getAttribute("data-label") || el.textContent;
-
-          if (isHidden) {
-            // store original label so we can restore it
-            el.setAttribute("data-label", `Show all (${(DATA.find(x => {
-              const u = pickFirst(x, ["viewDetailsUrl","viewDetailsHref","url","link"]);
-              const t = pickFirst(x, ["title","name","itineraryName","cruiseName"]);
-              const j = pickFirst(x, ["journeyText"]);
-              const r = pickFirst(x, ["region"]);
-              const d = normalizeDuration(x);
-              const k = (u && u.startsWith("http")) ? u : (String(t||"")+"|"+String(j||"")+"|"+String(r||"")+"|"+String(d||""));
-              return k === key;
-            })?.dateRanges?.length || "")})`);
-          } else {
-            // restore
-            const label = el.getAttribute("data-label");
-            if (label) el.textContent = label;
-          }
+          el.textContent = isHidden ? "Hide extra dates" : `Show all (${total})`;
         });
       });
     }
@@ -615,6 +761,10 @@
 
       if (datesMode === "hasDates") list = list.filter(it => Array.isArray(it.dateRanges) && it.dateRanges.length > 0);
       else if (datesMode === "noDates") list = list.filter(it => !(Array.isArray(it.dateRanges) && it.dateRanges.length > 0));
+
+      if (SELECTED_SHIPS.size > 0) {
+        list = list.filter(it => SELECTED_SHIPS.has(getShipName(it) || "Unknown"));
+      }
 
       if (needle) list = list.filter(it => textOf(it).includes(needle));
 
@@ -647,14 +797,21 @@
           else throw new Error("Loaded JSON but couldn't find an array (expected raw.items).");
         }
 
-        // enable UI
         q.disabled = false;
         regionFilter.disabled = false;
         datesFilter.disabled = false;
+        shipBtn.disabled = false;
 
         buildRegionOptions(DATA);
+        buildShipOptions(DATA);
 
-        // initial render
+        q.value = "";
+        regionFilter.value = "";
+        datesFilter.value = "";
+        SELECTED_SHIPS.clear();
+        updateShipBtnLabel();
+        closeShipMenu();
+
         applyFilters();
       } catch (e) {
         setStatus("bad", `Failed to load JSON: ${e.message}`);
@@ -662,10 +819,8 @@
       }
     }
 
-    // ✅ Auto-load on page open
     window.addEventListener("DOMContentLoaded", loadData);
 
-    // Optional manual reload
     reloadBtn.addEventListener("click", loadData);
   </script>
 </body>
