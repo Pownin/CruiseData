@@ -508,7 +508,7 @@
         <h1><span class="mark"></span> Cruise Data</h1>
         <div class="subtitle">
           <span class="pill"><span id="statusDot" class="dot warn"></span><span id="status">Loading…</span></span>
-          <span class="pill"><span class="dot"></span>Shows first 500 matches for speed</span>
+          <span class="pill"><span class="dot"></span>Shows first 600 matches for speed</span>
           <span class="pill"><span class="dot"></span>Ship filter is multi-select</span>
         </div>
       </div>
@@ -755,7 +755,7 @@
     function render(list) {
       out.innerHTML = "";
 
-      const capped = list.slice(0, 500);
+      const capped = list.slice(0, 600);
       const frag = document.createDocumentFragment();
 
       capped.forEach((item) => {
@@ -813,7 +813,7 @@
 
       out.appendChild(frag);
 
-      const shown = Math.min(list.length, 500);
+      const shown = Math.min(list.length, 600);
       countNote.textContent = `Matches: ${list.length} (rendered: ${shown})`;
 
       out.querySelectorAll("[data-toggle]").forEach(el => {
@@ -850,7 +850,7 @@
 
       render(list);
 
-      const shown = Math.min(list.length, 500);
+      const shown = Math.min(list.length, 600);
       setStatus("good", `Loaded ${DATA.length} items · Showing ${shown} of ${list.length} match${list.length===1?"":"es"}`);
     }
 
@@ -904,3 +904,4 @@
   </script>
 </body>
 </html>
+
