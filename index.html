@@ -6,269 +6,320 @@
   <title>Cruise Data Viewer</title>
   <style>
     :root{
-      --bg: #0b1220;
+      --bg0:#080611;
+      --bg1:#110a25;
       --panel: rgba(255,255,255,0.06);
-      --panel2: rgba(255,255,255,0.08);
-      --text: rgba(255,255,255,0.92);
-      --muted: rgba(255,255,255,0.70);
+      --panel2: rgba(255,255,255,0.085);
+      --text: rgba(255,255,255,0.93);
+      --muted: rgba(255,255,255,0.72);
       --muted2: rgba(255,255,255,0.55);
       --border: rgba(255,255,255,0.12);
-      --shadow: 0 14px 40px rgba(0,0,0,0.35);
-      --shadow2: 0 10px 26px rgba(0,0,0,0.25);
-      --accent: #6ee7ff;
-      --accent2: #a78bfa;
-      --good: #34d399;
-      --warn: #fbbf24;
-      --bad: #fb7185;
-      --cardRadius: 16px;
+      --shadow: 0 16px 46px rgba(0,0,0,0.45);
+      --shadow2: 0 10px 26px rgba(0,0,0,0.30);
+
+      --accent:#c084fc;   /* purple */
+      --accent2:#f472b6;  /* pink */
+      --accent3:#60a5fa;  /* blue (subtle) */
+
+      --good:#34d399;
+      --warn:#fbbf24;
+      --bad:#fb7185;
+
+      --cardRadius: 18px;
     }
 
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
       color: var(--text);
       background:
-        radial-gradient(1200px 600px at 20% -10%, rgba(110,231,255,0.20), transparent 55%),
-        radial-gradient(900px 500px at 90% 10%, rgba(167,139,250,0.18), transparent 60%),
-        radial-gradient(800px 600px at 50% 120%, rgba(52,211,153,0.10), transparent 60%),
-        var(--bg);
-      min-height: 100vh;
+        radial-gradient(1100px 600px at 18% -10%, rgba(192,132,252,0.22), transparent 55%),
+        radial-gradient(900px 600px at 90% 10%, rgba(244,114,182,0.16), transparent 55%),
+        radial-gradient(900px 700px at 50% 120%, rgba(96,165,250,0.10), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg0));
+      min-height:100vh;
     }
 
-    .wrap {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 18px 16px 60px;
+    .wrap{
+      max-width: 1220px;
+      margin:0 auto;
+      padding: 18px 16px 64px;
     }
 
-    .appbar {
+    .appbar{
       position: sticky;
-      top: 0;
-      z-index: 20;
+      top:0;
+      z-index:20;
       padding: 14px 16px;
       margin: 0 -16px 14px;
       backdrop-filter: blur(14px);
-      background: linear-gradient(to bottom, rgba(11,18,32,0.88), rgba(11,18,32,0.60));
+      background: linear-gradient(to bottom, rgba(8,6,17,0.92), rgba(8,6,17,0.68));
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
-
-    .appbar-inner {
+    .appbar-inner{
+      max-width: 1220px;
+      margin: 0 auto;
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content: space-between;
       gap: 12px;
-      max-width: 1180px;
-      margin: 0 auto;
-    }
-
-    .title {
-      display:flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .title h1 {
-      margin: 0;
-      font-size: 18px;
-      letter-spacing: 0.2px;
-    }
-    .subtitle {
-      font-size: 13px;
-      color: var(--muted);
-      display:flex;
-      align-items:center;
-      gap: 8px;
       flex-wrap: wrap;
     }
 
-    .pill {
+    .title{
+      display:flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 260px;
+    }
+    .title h1{
+      margin:0;
+      font-size: 18px;
+      letter-spacing: .25px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .title h1 .mark{
+      width: 10px; height:10px; border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 0 4px rgba(192,132,252,0.12);
+      display:inline-block;
+    }
+
+    .subtitle{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items:center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .pill{
       display:inline-flex;
       align-items:center;
-      gap: 6px;
-      padding: 4px 10px;
+      gap: 7px;
+      padding: 5px 10px;
       border: 1px solid var(--border);
       border-radius: 999px;
-      background: rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.05);
       color: var(--muted);
-      font-size: 12px;
+      white-space: nowrap;
     }
-    .dot { width: 6px; height: 6px; border-radius: 999px; background: var(--muted2); display:inline-block; }
-    .dot.good { background: var(--good); }
-    .dot.warn { background: var(--warn); }
-    .dot.bad  { background: var(--bad); }
+    .dot{ width:7px; height:7px; border-radius:999px; background: var(--muted2); display:inline-block; }
+    .dot.good{ background: var(--good); }
+    .dot.warn{ background: var(--warn); }
+    .dot.bad{ background: var(--bad); }
 
-    .controls {
+    .controls{
       display:flex;
       align-items:center;
       gap: 10px;
       flex-wrap: wrap;
       justify-content: flex-end;
+      flex: 1;
     }
 
-    .btn {
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.06);
+    .btn{
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.05);
       color: var(--text);
       padding: 10px 12px;
-      border-radius: 12px;
+      border-radius: 14px;
       cursor: pointer;
       font-size: 14px;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
       display:inline-flex;
       align-items:center;
       gap: 8px;
-      user-select: none;
+      user-select:none;
     }
-    .btn:hover { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.28); transform: translateY(-1px); }
-    .btn:active { transform: translateY(0px); }
-    .btn.primary {
-      border-color: rgba(110,231,255,0.45);
-      background: linear-gradient(135deg, rgba(110,231,255,0.18), rgba(167,139,250,0.14));
+    .btn:hover{
+      background: rgba(255,255,255,0.085);
+      border-color: rgba(255,255,255,0.28);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.25);
+    }
+    .btn:active{ transform: translateY(0); }
+
+    .btn.primary{
+      border-color: rgba(192,132,252,0.55);
+      background: linear-gradient(135deg, rgba(192,132,252,0.22), rgba(244,114,182,0.14));
+    }
+    .btn.primary:hover{
+      border-color: rgba(192,132,252,0.75);
+      background: linear-gradient(135deg, rgba(192,132,252,0.26), rgba(244,114,182,0.18));
     }
 
-    .field {
+    .field{
       display:flex;
       align-items:center;
       gap: 10px;
       padding: 10px 12px;
-      border-radius: 14px;
+      border-radius: 16px;
       border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.05);
       min-width: min(560px, 92vw);
+      position: relative;
     }
-    .field:focus-within {
-      border-color: rgba(110,231,255,0.55);
-      box-shadow: 0 0 0 4px rgba(110,231,255,0.12);
+    .field::after{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      border-radius: 16px;
+      pointer-events:none;
+      opacity:0;
+      transition: opacity .15s ease;
+      background: linear-gradient(135deg, rgba(192,132,252,0.30), rgba(244,114,182,0.20));
+      filter: blur(10px);
+      z-index:-1;
     }
-    .field input {
+    .field:focus-within{
+      border-color: rgba(192,132,252,0.65);
+      box-shadow: 0 0 0 4px rgba(192,132,252,0.14);
+    }
+    .field:focus-within::after{ opacity: 1; }
+
+    .field input{
       flex: 1;
       background: transparent;
       border: none;
-      outline: none;
+      outline:none;
       color: var(--text);
       font-size: 14px;
     }
-    .field input::placeholder { color: rgba(255,255,255,0.45); }
+    .field input::placeholder{ color: rgba(255,255,255,0.45); }
 
-    .select {
+    .select{
       border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.05);
       color: var(--text);
       padding: 10px 12px;
-      border-radius: 12px;
+      border-radius: 14px;
       font-size: 14px;
-      outline: none;
+      outline:none;
+      min-width: 170px;
     }
-    .select option { color: #111; }
+    .select:focus{
+      border-color: rgba(192,132,252,0.65);
+      box-shadow: 0 0 0 4px rgba(192,132,252,0.12);
+    }
+    .select option{ color:#111; }
 
-    .hint {
+    .hint{
       color: var(--muted);
       font-size: 13px;
       margin: 10px 0 16px;
+      line-height: 1.35;
     }
 
-    .grid {
+    .grid{
       display:flex;
       flex-direction: column;
       gap: 12px;
       margin-top: 10px;
     }
 
-    .card {
+    .card{
       border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.045);
       border-radius: var(--cardRadius);
-      overflow: hidden;
+      overflow:hidden;
       box-shadow: var(--shadow2);
-      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease, box-shadow .12s ease;
     }
-    .card:hover {
+    .card:hover{
       transform: translateY(-2px);
       background: rgba(255,255,255,0.06);
       border-color: rgba(255,255,255,0.18);
       box-shadow: var(--shadow);
     }
 
-    .card-inner {
+    .card-inner{
       display:flex;
       gap: 14px;
       padding: 14px;
-      align-items: flex-start;
+      align-items:flex-start;
     }
 
-    .thumb {
-      width: 132px;
-      height: 88px;
-      border-radius: 14px;
+    .thumb{
+      width: 138px;
+      height: 92px;
+      border-radius: 16px;
       border: 1px solid rgba(255,255,255,0.12);
-      overflow: hidden;
+      overflow:hidden;
       background: rgba(255,255,255,0.04);
       flex: 0 0 auto;
     }
-    .thumb img { width:100%; height:100%; object-fit: cover; display:block; }
+    .thumb img{ width:100%; height:100%; object-fit: cover; display:block; }
 
-    .content { flex: 1; min-width: 0; }
+    .content{ flex:1; min-width:0; }
 
-    .headline {
+    .headline{
       display:flex;
-      align-items: flex-start;
+      align-items:flex-start;
       justify-content: space-between;
       gap: 12px;
     }
 
-    .name {
-      font-weight: 700;
+    .name{
+      font-weight: 750;
       font-size: 16px;
       letter-spacing: 0.2px;
       margin: 0;
       line-height: 1.25;
     }
 
-    .meta {
-      margin-top: 6px;
+    .meta{
+      margin-top: 7px;
       color: var(--muted);
       font-size: 13px;
       display:flex;
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
+      line-height: 1.3;
     }
 
-    .tag {
+    .tag{
       display:inline-flex;
       align-items:center;
       gap: 6px;
       padding: 4px 10px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.055);
       font-size: 12px;
-      color: var(--muted);
+      color: rgba(255,255,255,0.78);
       white-space: nowrap;
     }
 
-    .link {
+    .link{
       display:inline-flex;
       align-items:center;
       gap: 8px;
-      padding: 8px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(110,231,255,0.35);
-      background: rgba(110,231,255,0.10);
+      padding: 9px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(192,132,252,0.52);
+      background: rgba(192,132,252,0.16);
       color: var(--text);
-      text-decoration: none;
+      text-decoration:none;
       font-size: 13px;
       white-space: nowrap;
     }
-    .link:hover { border-color: rgba(110,231,255,0.55); background: rgba(110,231,255,0.14); text-decoration: none; }
+    .link:hover{
+      border-color: rgba(192,132,252,0.75);
+      background: rgba(192,132,252,0.22);
+      text-decoration:none;
+    }
 
-    .dates-block {
-      margin-top: 10px;
+    .dates-block{
+      margin-top: 12px;
       padding-top: 10px;
       border-top: 1px solid rgba(255,255,255,0.10);
     }
-
-    .dates-title {
+    .dates-title{
       font-size: 12px;
       letter-spacing: .4px;
       text-transform: uppercase;
@@ -279,34 +330,31 @@
       justify-content: space-between;
       gap: 10px;
     }
-
-    .chips {
+    .chips{
       display:flex;
       flex-wrap: wrap;
       gap: 8px;
     }
-
-    .chip {
+    .chip{
       border: 1px solid rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.06);
       padding: 6px 10px;
       border-radius: 999px;
       font-size: 12px;
-      color: rgba(255,255,255,0.82);
+      color: rgba(255,255,255,0.86);
+    }
+    .chip.more{
+      cursor:pointer;
+      border-color: rgba(244,114,182,0.55);
+      background: rgba(244,114,182,0.16);
+    }
+    .chip.more:hover{
+      border-color: rgba(244,114,182,0.75);
+      background: rgba(244,114,182,0.20);
     }
 
-    .chip.more {
-      cursor: pointer;
-      border-color: rgba(167,139,250,0.45);
-      background: rgba(167,139,250,0.14);
-    }
-    .chip.more:hover {
-      border-color: rgba(167,139,250,0.65);
-      background: rgba(167,139,250,0.18);
-    }
-
-    .footerbar {
-      margin-top: 14px;
+    .footerbar{
+      margin-top: 16px;
       display:flex;
       justify-content: space-between;
       align-items:center;
@@ -315,8 +363,7 @@
       color: var(--muted2);
       font-size: 12px;
     }
-
-    .kbd {
+    .kbd{
       border: 1px solid rgba(255,255,255,0.16);
       background: rgba(255,255,255,0.06);
       border-radius: 8px;
@@ -325,12 +372,13 @@
       color: rgba(255,255,255,0.75);
     }
 
-    @media (max-width: 700px) {
-      .field { min-width: 100%; }
-      .card-inner { flex-direction: column; }
-      .thumb { width: 100%; height: 160px; }
-      .headline { flex-direction: column; align-items: flex-start; }
-      .controls { width: 100%; justify-content: flex-start; }
+    @media (max-width: 780px){
+      .field{ min-width: 100%; }
+      .select{ min-width: 150px; }
+      .card-inner{ flex-direction: column; }
+      .thumb{ width:100%; height:170px; }
+      .headline{ flex-direction: column; align-items:flex-start; }
+      .controls{ width:100%; justify-content:flex-start; }
     }
   </style>
 </head>
@@ -339,17 +387,17 @@
   <div class="appbar">
     <div class="appbar-inner">
       <div class="title">
-        <h1>Cruise Data</h1>
+        <h1><span class="mark"></span> Cruise Data</h1>
         <div class="subtitle">
-          <span class="pill"><span class="dot warn"></span><span id="status">Not loaded</span></span>
+          <span class="pill"><span id="statusDot" class="dot warn"></span><span id="status">Loading…</span></span>
           <span class="pill"><span class="dot"></span>Shows first 500 matches for speed</span>
           <span class="pill"><span class="dot"></span>Links open in new tab</span>
         </div>
       </div>
 
       <div class="controls">
-        <button id="load" class="btn primary" title="Load cruiseDataNew.json">
-          ⛵ Load JSON
+        <button id="reload" class="btn primary" title="Reload cruiseDataNew.json">
+          ♻️ Reload
         </button>
 
         <div class="field" title="Search across all fields">
@@ -373,13 +421,13 @@
   <div class="wrap">
     <div class="hint">
       Tip: try searching “Tahiti”, “Star Collector”, a port name, or a month like “Feb”.
-      Use <span class="kbd">Ctrl</span> + <span class="kbd">F</span> too if you want, but the search box is way better.
+      Use <span class="kbd">Ctrl</span> + <span class="kbd">F</span> if you want, but this search box is faster.
     </div>
 
     <div id="out" class="grid"></div>
 
     <div class="footerbar">
-      <div>Made for quick internal browsing (static page, no server).</div>
+      <div>Static page (no server). JSON loaded from the same folder as this page.</div>
       <div id="countNote"></div>
     </div>
   </div>
@@ -388,13 +436,19 @@
     let DATA = [];
     let LAST_RENDERED = [];
 
-    const loadBtn = document.getElementById("load");
     const q = document.getElementById("q");
     const out = document.getElementById("out");
     const status = document.getElementById("status");
+    const statusDot = document.getElementById("statusDot");
     const regionFilter = document.getElementById("regionFilter");
     const datesFilter = document.getElementById("datesFilter");
     const countNote = document.getElementById("countNote");
+    const reloadBtn = document.getElementById("reload");
+
+    function setStatus(kind, msg){
+      status.textContent = msg;
+      statusDot.className = "dot " + (kind === "good" ? "good" : kind === "bad" ? "bad" : "warn");
+    }
 
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, c => ({
@@ -421,6 +475,10 @@
       return "";
     }
 
+    function cssSafe(s) {
+      return String(s).replace(/[^a-zA-Z0-9\-_:.]/g, "_");
+    }
+
     function buildRegionOptions(items) {
       const regions = new Set();
       items.forEach(it => {
@@ -428,7 +486,9 @@
         if (r) regions.add(String(r).trim());
       });
       const sorted = Array.from(regions).sort((a,b) => a.localeCompare(b));
-      regionFilter.innerHTML = `<option value="">All regions</option>` + sorted.map(r => `<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join("");
+      regionFilter.innerHTML =
+        `<option value="">All regions</option>` +
+        sorted.map(r => `<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join("");
     }
 
     function render(list) {
@@ -450,13 +510,13 @@
         const safeUrl = (typeof url === "string" && url.startsWith("http")) ? url : "";
         const safeImg = (typeof img === "string" && img.startsWith("http")) ? img : "";
 
-        const MAX_DATES_SHOWN = 8;
+        const MAX_DATES_SHOWN = 10;
         const hasManyDates = dateRanges.length > MAX_DATES_SHOWN;
         const shownDates = hasManyDates ? dateRanges.slice(0, MAX_DATES_SHOWN) : dateRanges;
         const hiddenDates = hasManyDates ? dateRanges.slice(MAX_DATES_SHOWN) : [];
 
-        // Unique key for toggle that stays stable even when filtered
-        const toggleKey = safeUrl || (title + "|" + (journey || "") + "|" + region + "|" + duration);
+        // stable key for toggles even when filtered
+        const toggleKey = safeUrl || (String(title||"") + "|" + String(journey||"") + "|" + String(region||"") + "|" + String(duration||""));
 
         const card = document.createElement("div");
         card.className = "card";
@@ -509,12 +569,11 @@
 
       out.appendChild(frag);
 
-      // status + footer counts
+      // counts
       const shown = Math.min(list.length, 500);
-      status.textContent = `Loaded ${DATA.length} items · Showing ${shown} of ${list.length} match${list.length===1?"":"es"}`;
       countNote.textContent = `Matches: ${list.length} (rendered: ${shown})`;
 
-      // Wire toggles (stable even when filtered)
+      // toggle wiring
       out.querySelectorAll("[data-toggle]").forEach(el => {
         el.addEventListener("click", () => {
           const key = el.getAttribute("data-toggle");
@@ -523,19 +582,26 @@
 
           const isHidden = more.style.display === "none";
           more.style.display = isHidden ? "flex" : "none";
-          el.textContent = isHidden ? "Hide extra dates" : el.textContent.replace("Hide extra dates", "");
-          if (!isHidden) {
-            // restore original label
-            const total = (DATA.find(x => (pickFirst(x, ["viewDetailsUrl","url","link"]) || (pickFirst(x, ["title"]) + "|" + pickFirst(x, ["journeyText"]) + "|" + pickFirst(x, ["region"]) + "|" + normalizeDuration(x))) === key)?.dateRanges?.length) || "";
-            el.textContent = total ? `Show all (${total})` : "Show all";
+          el.textContent = isHidden ? "Hide extra dates" : el.getAttribute("data-label") || el.textContent;
+
+          if (isHidden) {
+            // store original label so we can restore it
+            el.setAttribute("data-label", `Show all (${(DATA.find(x => {
+              const u = pickFirst(x, ["viewDetailsUrl","viewDetailsHref","url","link"]);
+              const t = pickFirst(x, ["title","name","itineraryName","cruiseName"]);
+              const j = pickFirst(x, ["journeyText"]);
+              const r = pickFirst(x, ["region"]);
+              const d = normalizeDuration(x);
+              const k = (u && u.startsWith("http")) ? u : (String(t||"")+"|"+String(j||"")+"|"+String(r||"")+"|"+String(d||""));
+              return k === key;
+            })?.dateRanges?.length || "")})`);
+          } else {
+            // restore
+            const label = el.getAttribute("data-label");
+            if (label) el.textContent = label;
           }
         });
       });
-    }
-
-    function cssSafe(s) {
-      // make a string safe for use in an element id
-      return String(s).replace(/[^a-zA-Z0-9\-_:.]/g, "_");
     }
 
     function applyFilters() {
@@ -545,42 +611,35 @@
 
       let list = DATA;
 
-      if (region) {
-        list = list.filter(it => String(pickFirst(it, ["region"]) || "").trim() === region);
-      }
+      if (region) list = list.filter(it => String(pickFirst(it, ["region"]) || "").trim() === region);
 
-      if (datesMode === "hasDates") {
-        list = list.filter(it => Array.isArray(it.dateRanges) && it.dateRanges.length > 0);
-      } else if (datesMode === "noDates") {
-        list = list.filter(it => !(Array.isArray(it.dateRanges) && it.dateRanges.length > 0));
-      }
+      if (datesMode === "hasDates") list = list.filter(it => Array.isArray(it.dateRanges) && it.dateRanges.length > 0);
+      else if (datesMode === "noDates") list = list.filter(it => !(Array.isArray(it.dateRanges) && it.dateRanges.length > 0));
 
-      if (needle) {
-        list = list.filter(it => textOf(it).includes(needle));
-      }
+      if (needle) list = list.filter(it => textOf(it).includes(needle));
 
       render(list);
+
+      const shown = Math.min(list.length, 500);
+      setStatus("good", `Loaded ${DATA.length} items · Showing ${shown} of ${list.length} match${list.length===1?"":"es"}`);
     }
 
     q.addEventListener("input", applyFilters);
     regionFilter.addEventListener("change", applyFilters);
     datesFilter.addEventListener("change", applyFilters);
 
-    loadBtn.addEventListener("click", async () => {
+    async function loadData() {
       try {
-        status.textContent = "Loading…";
+        setStatus("warn", "Loading…");
 
-        // IMPORTANT: put cruiseDataNew.json in the SAME folder as this index.html
         const res = await fetch("./cruiseDataNew.json", { cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status} (couldn't find cruiseDataNew.json)`);
 
         const raw = await res.json();
 
-        if (Array.isArray(raw)) {
-          DATA = raw;
-        } else if (raw && Array.isArray(raw.items)) {
-          DATA = raw.items;
-        } else {
+        if (Array.isArray(raw)) DATA = raw;
+        else if (raw && Array.isArray(raw.items)) DATA = raw.items;
+        else {
           const firstArrayKey = raw && typeof raw === "object"
             ? Object.keys(raw).find(k => Array.isArray(raw[k]))
             : null;
@@ -588,24 +647,26 @@
           else throw new Error("Loaded JSON but couldn't find an array (expected raw.items).");
         }
 
-        // enable controls
+        // enable UI
         q.disabled = false;
         regionFilter.disabled = false;
         datesFilter.disabled = false;
 
-        // build filters
         buildRegionOptions(DATA);
 
-        q.value = "";
-        regionFilter.value = "";
-        datesFilter.value = "";
-        q.focus();
-
-        render(DATA);
+        // initial render
+        applyFilters();
       } catch (e) {
-        status.textContent = `Failed to load JSON: ${e.message}`;
+        setStatus("bad", `Failed to load JSON: ${e.message}`);
+        countNote.textContent = "";
       }
-    });
+    }
+
+    // ✅ Auto-load on page open
+    window.addEventListener("DOMContentLoaded", loadData);
+
+    // Optional manual reload
+    reloadBtn.addEventListener("click", loadData);
   </script>
 </body>
 </html>
