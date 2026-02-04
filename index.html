@@ -850,7 +850,7 @@
       const raw = await res.json();
 
       if (Array.isArray(raw)) DATA = raw;
-      else if (nraw && Array.isArray(raw.items)) DATA = raw.items;
+      else if (raw && Array.isArray(raw.items)) DATA = raw.items;
       else {
         const firstArrayKey = raw && typeof raw === "object"
           ? Object.keys(raw).find(k => Array.isArray(raw[k]))
@@ -887,4 +887,5 @@
 
 </body>
 </html>
+
 
