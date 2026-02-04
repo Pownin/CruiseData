@@ -731,31 +731,31 @@
     function buildDatesHtml(dateRanges, toggleKey) {
       const total = dateRanges.length;
       if (!total) return `<div class="datePanel"><div class="dateSummary">No dates</div></div>`;
-
+    
       const preview = dateRanges.slice(0, MAX_PREVIEW);
       const extra = dateRanges.slice(MAX_PREVIEW);
       const hasExtra = extra.length > 0;
-
+    
       const moreId = `more-${cssSafe(toggleKey)}`;
-
+    
       const previewHtml = `
         <div class="dateGrid">
           ${preview.map((d,i) => `<div class="dateCell"><span>${escapeHtml(d)}</span><small>#${i+1}</small></div>`).join("")}
         </div>
       `;
-
+    
       const extraHtml = hasExtra ? `
         <div class="dateGrid" id="${moreId}" hidden style="margin-top:10px;">
           ${extra.map((d,i) => `<div class="dateCell"><span>${escapeHtml(d)}</span><small>#${MAX_PREVIEW + i + 1}</small></div>`).join("")}
         </div>
       ` : "";
-
+    
       const btnHtml = hasExtra
         ? `<button class="dateBtn" data-toggle="${escapeHtml(toggleKey)}" data-total="${total}" data-open="0">
              Show all (${total})
            </button>`
         : "";
-
+    
       return `
         <div class="datePanel">
           <div class="dateTopRow">
@@ -833,20 +833,19 @@
       countNote.textContent = `Matches: ${list.length} (rendered: ${shown})`;
 
       out.querySelectorAll("[data-toggle]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const key = btn.getAttribute("data-toggle");
-          const total = btn.getAttribute("data-total") || "";
-          const more = document.getElementById(`more-${cssSafe(key)}`);
-          if (!more) return;
-
-          const isOpen = btn.getAttribute("data-open") === "1";
-
-          more.hidden = isOpen;
-          btn.setAttribute("data-open", isOpen ? "0" : "1");
-          btn.textContent = isOpen ? `Show all (${total})` : "Hide extra dates";
-        });
+      btn.addEventListener("click", () => {
+        const key = btn.getAttribute("data-toggle");
+        const total = btn.getAttribute("data-total") || "";
+        const more = document.getElementById(`more-${cssSafe(key)}`);
+        if (!more) return;
+    
+        const isOpen = btn.getAttribute("data-open") === "1";
+    
+        more.hidden = isOpen; // open -> hide, closed -> show
+        btn.setAttribute("data-open", isOpen ? "0" : "1");
+        btn.textContent = isOpen ? `Show all (${total})` : "Hide extra dates";
       });
-    }
+    });
 
     function applyFilters() {
       const needle = q.value.trim().toLowerCase();
@@ -922,4 +921,5 @@
   </script>
 </body>
 </html>
+
 
