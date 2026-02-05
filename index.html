@@ -6,366 +6,377 @@
   <title>Cruise Data Viewer</title>
 
   <style>
-    :root{
-      --bgTop: #071725;
-      --bgMid: #050f1a;
-      --bgBot: #03070d;
+  :root{
+    --bgTop: #071725;
+    --bgMid: #050f1a;
+    --bgBot: #03070d;
 
-      --cardBase: rgba(1, 69, 103, 0.78);
-      --panelBase: rgba(1, 69, 103, 0.62);
-      --panelBase2: rgba(1, 69, 103, 0.52);
+    --text: rgba(255,255,255,0.93);
+    --muted: rgba(255,255,255,0.78);
+    --muted2: rgba(255,255,255,0.62);
 
-      --text: rgba(255,255,255,0.93);
-      --muted: rgba(255,255,255,0.78);
-      --muted2: rgba(255,255,255,0.62);
-      --border: rgba(255,255,255,0.14);
+    --shadow: 0 18px 60px rgba(0,0,0,0.55);
+    --shadow2: 0 10px 26px rgba(0,0,0,0.35);
 
-      --shadow: 0 18px 60px rgba(0,0,0,0.55);
-      --shadow2: 0 10px 26px rgba(0,0,0,0.35);
+    --gold: #d4af37;
 
-      --gold: #d4af37;
+    --good:#34d399;
+    --warn:#fbbf24;
+    --bad:#fb7185;
 
-      --good:#34d399;
-      --warn:#fbbf24;
-      --bad:#fb7185;
+    --cardRadius: 18px;
+    --dateMinCol: 200px;
 
-      --cardRadius: 18px;
-      --dateMinCol: 200px;
+    --controlH: 42px;
+    --controlR: 16px;
 
-      /* NEW */
-      --controlH: 42px;
-      --controlR: 16px;
-    }
+    /* sticky header sizing */
+    --appbarPadY: 10px;
+    --appbarGap: 10px;
+  }
 
-    *{ box-sizing:border-box; }
+  *{ box-sizing:border-box; }
 
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      color: var(--text);
-      min-height:100vh;
-      background: linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 45%, var(--bgBot) 100%);
-      overflow-x: hidden;
-    }
+  /* ✅ Prevent “white behind transparent stuff” on mobile */
+  html, body{
+    height: 100%;
+    background-color: var(--bgBot);
+  }
 
-    .wrap{
-      max-width: 1220px;
-      margin:0 auto;
-      padding: 18px 16px 64px;
-    }
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    color: var(--text);
+    min-height:100vh;
+    background: linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 45%, var(--bgBot) 100%);
+    overflow-x: hidden;
 
-    /* =========================
-       APPBAR (SLEEK 2-ROW)
-       ========================= */
-    .appbar{
-      position: sticky;
-      top:0;
-      z-index:20;
-      padding: 12px 16px;
-      margin: 0 -16px 14px;
-      backdrop-filter: none !important;
-      background: rgba(6, 8, 10, 0.98) !important;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
+    /* stops rubber-band showing weird background flashes */
+    overscroll-behavior: none;
+  }
 
-    .appbar-inner{
-      max-width: 1220px;
-      margin: 0 auto;
-      display:flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+  .wrap{
+    max-width: 1220px;
+    margin:0 auto;
+    padding: 18px 16px 64px;
+  }
 
-    .topline{
-      display:flex;
-      align-items:flex-start;
-      justify-content: space-between;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
+  /* =========================
+     APPBAR (sticky, compact)
+     ========================= */
+  .appbar{
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding: var(--appbarPadY) 16px;
+    margin: 0 -16px 14px;
 
-    .title{
-      display:flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 260px;
-    }
-    .title h1{
-      margin:0;
-      font-size: 18px;
-      letter-spacing: .25px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .title h1 .mark{
-      width: 10px; height:10px; border-radius: 999px;
-      background: var(--gold);
-      box-shadow: 0 0 0 4px rgba(212,175,55,0.18);
-      display:inline-block;
-    }
+    /* ✅ make it solid so nothing “bleeds” through */
+    background: rgba(6, 8, 10, 0.98) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: none !important;
 
-    .subtitle{
-      display:flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items:center;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap: 7px;
-      padding: 6px 10px;
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 999px;
-      background: rgba(0,0,0,0.28);
-      color: var(--muted);
-      white-space: nowrap;
-    }
-    .dot{ width:7px; height:7px; border-radius:999px; background: var(--muted2); display:inline-block; }
-    .dot.good{ background: var(--good); }
-    .dot.warn{ background: var(--warn); }
-    .dot.bad{ background: var(--bad); }
+    /* subtle depth without becoming a giant blob */
+    box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+  }
 
-    /* Toolbar strip (makes everything feel "one unit") */
-    .toolbar{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      flex-wrap: wrap;
-      padding: 10px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.22);
-      box-shadow: 0 16px 46px rgba(0,0,0,0.35);
-    }
+  .appbar-inner{
+    max-width: 1220px;
+    margin: 0 auto;
+    display:flex;
+    flex-direction: column;
+    gap: var(--appbarGap);
+  }
 
-    /* =========================
-       CONTROLS (UNIFIED HEIGHT)
-       ========================= */
-    .btn{
-      height: var(--controlH);
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.04);
-      color: rgba(255,255,255,0.92);
-      padding: 0 14px;
-      border-radius: var(--controlR);
-      cursor: pointer;
-      font-size: 14px;
-      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap: 8px;
-      user-select:none;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
-      white-space: nowrap;
-    }
-    .btn:hover{
-      transform: translateY(-1px);
-      filter: brightness(1.03);
-      box-shadow: 0 14px 34px rgba(0,0,0,0.24);
-      border-color: rgba(255,255,255,0.22);
-    }
-    .btn:active{ transform: translateY(0); }
+  .title{
+    display:flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 260px;
+  }
+  .title h1{
+    margin:0;
+    font-size: 18px;
+    letter-spacing: .25px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .title h1 .mark{
+    width: 10px; height:10px; border-radius: 999px;
+    background: var(--gold);
+    box-shadow: 0 0 0 4px rgba(212,175,55,0.18);
+    display:inline-block;
+  }
 
-    /* Reload should NOT be a giant white badge - make it elegant gold-outline */
-    .btn.primary{
-    border: 2px solid rgba(212,175,55,0.95);
+  .subtitle{
+    display:flex;
+    flex-wrap: nowrap;             /* ✅ keep one row */
+    gap: 8px;
+    align-items:center;
+    font-size: 12px;
+    color: var(--muted);
+    overflow-x: auto;              /* ✅ scroll pills horizontally */
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+  .subtitle::-webkit-scrollbar{ height: 6px; }
+  .subtitle::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.12); border-radius: 999px; }
+
+  .pill{
+    flex: 0 0 auto;
+    display:inline-flex;
+    align-items:center;
+    gap: 7px;
+    padding: 6px 10px;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 999px;
+    background: rgba(0,0,0,0.28);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .dot{ width:7px; height:7px; border-radius:999px; background: var(--muted2); display:inline-block; }
+  .dot.good{ background: var(--good); }
+  .dot.warn{ background: var(--warn); }
+  .dot.bad{ background: var(--bad); }
+
+  /* =========================
+     TOOLBAR (single unit)
+     ========================= */
+  .toolbar{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.10);
     background: rgba(0,0,0,0.22);
+  }
+
+  /* =========================
+     CONTROLS
+     ========================= */
+  .btn{
+    height: var(--controlH);
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.04);
     color: rgba(255,255,255,0.92);
-    }
-    .btn.primary:hover{
-    background: rgba(212,175,55,0.12);
-    box-shadow: 0 0 0 4px rgba(212,175,55,0.10);
-    }
+    padding: 0 14px;
+    border-radius: var(--controlR);
+    cursor: pointer;
+    font-size: 14px;
+    transition: transform .12s ease, filter .12s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap: 8px;
+    user-select:none;
+    white-space: nowrap;
+  }
+  .btn:hover{
+    transform: translateY(-1px);
+    filter: brightness(1.03);
+    border-color: rgba(255,255,255,0.22);
+    box-shadow: 0 12px 26px rgba(0,0,0,0.22);
+  }
 
-    .field{
-      height: var(--controlH);
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      padding: 0 12px;
-      border-radius: var(--controlR);
-      border: 1px solid rgba(255,255,255,0.16);
-      background: rgba(0,0,0,0.28);
-      min-width: min(520px, 92vw);
-    }
-    .field:focus-within{
-      border-color: rgba(212,175,55,0.70);
-      box-shadow: 0 0 0 4px rgba(212,175,55,0.14);
-    }
-    .field input{
-      flex: 1;
-      height: 100%;
-      background: transparent;
-      border: none;
-      outline:none;
-      color: var(--text);
-      font-size: 14px;
-    }
-    .field input::placeholder{ color: rgba(255,255,255,0.45); }
+  /* Reload: slimmer + not “giant yellow bar” */
+  .btn.primary{
+    border: 2px solid rgba(212,175,55,0.95);
+    background: rgba(255,255,255,0.03);
+    color: rgba(255,255,255,0.92);
+  }
+  .btn.primary:hover{
+    background: rgba(212,175,55,0.10);
+    border-color: rgba(212,175,55,1);
+  }
 
-    .select{
-      height: var(--controlH);
-      border: 1px solid rgba(255,255,255,0.16);
-      background: rgba(0,0,0,0.28);
-      color: var(--text);
-      padding: 0 12px;
-      border-radius: var(--controlR);
-      font-size: 14px;
-      outline:none;
-      min-width: 170px;
-    }
-    .select:focus{
-      border-color: rgba(212,175,55,0.70);
-      box-shadow: 0 0 0 4px rgba(212,175,55,0.12);
-    }
-    .select option{ color:#111; }
+  .field{
+    height: var(--controlH);
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    padding: 0 12px;
+    border-radius: var(--controlR);
+    border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(0,0,0,0.28);
+    min-width: min(520px, 92vw);
+  }
+  .field:focus-within{
+    border-color: rgba(212,175,55,0.70);
+    box-shadow: 0 0 0 4px rgba(212,175,55,0.14);
+  }
+  .field input{
+    flex: 1;
+    height: 100%;
+    background: transparent;
+    border: none;
+    outline:none;
+    color: var(--text);
+    font-size: 14px;
+  }
+  .field input::placeholder{ color: rgba(255,255,255,0.45); }
 
-    /* ship menu */
-    .shipWrap{ position:relative; display:inline-block; }
-    .shipMenu{
-      position:absolute;
-      right:0;
-      top: calc(100% + 10px);
-      width: min(460px, 92vw);
-      max-height: 460px;
-      overflow:auto;
-      padding: 12px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(3, 7, 13, 0.98);
-      box-shadow: var(--shadow);
-      z-index: 60;
-      display:none;
-    }
-    .shipMenuTop{
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-    .shipMenuHint{
-      color: rgba(255,255,255,0.70);
-      font-size: 12px;
-      margin-bottom: 10px;
-      line-height:1.35;
-    }
-    .shipList{ display:flex; flex-direction: column; gap: 8px; }
-    .shipItem{
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 10px 10px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.05);
-      cursor:pointer;
-      user-select:none;
-    }
-    .shipItem:hover{
-      border-color: rgba(212,175,55,0.45);
-      background: rgba(255,255,255,0.07);
-    }
-    .shipLeft{ display:flex; align-items:center; gap: 10px; min-width: 0; }
-    .shipName{
-      font-weight: 700;
-      font-size: 13px;
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-    }
-    .shipCountBadge{
-      font-size: 12px;
-      color: rgba(255,255,255,0.75);
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.06);
-      padding: 3px 8px;
-      border-radius: 999px;
-      white-space: nowrap;
-    }
-    .shipItem input{ width: 18px; height: 18px; accent-color: rgb(212,175,55); }
+  .select{
+    height: var(--controlH);
+    border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(0,0,0,0.28);
+    color: var(--text);
+    padding: 0 12px;
+    border-radius: var(--controlR);
+    font-size: 14px;
+    outline:none;
+    min-width: 170px;
+  }
+  .select:focus{
+    border-color: rgba(212,175,55,0.70);
+    box-shadow: 0 0 0 4px rgba(212,175,55,0.12);
+  }
+  .select option{ color:#111; }
 
-    /* =========================
-       CONTENT
-       ========================= */
-    .grid{ display:flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+  .shipWrap{ position:relative; display:inline-block; }
+  .shipMenu{
+    position:absolute;
+    right:0;
+    top: calc(100% + 10px);
+    width: min(460px, 92vw);
+    max-height: 460px;
+    overflow:auto;
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(3, 7, 13, 0.98);
+    box-shadow: var(--shadow);
+    z-index: 60;
+    display:none;
+  }
+  .shipMenuTop{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .shipMenuHint{
+    color: rgba(255,255,255,0.70);
+    font-size: 12px;
+    margin-bottom: 10px;
+    line-height:1.35;
+  }
+  .shipList{ display:flex; flex-direction: column; gap: 8px; }
+  .shipItem{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.05);
+    cursor:pointer;
+    user-select:none;
+  }
+  .shipItem:hover{
+    border-color: rgba(212,175,55,0.45);
+    background: rgba(255,255,255,0.07);
+  }
+  .shipLeft{ display:flex; align-items:center; gap: 10px; min-width: 0; }
+  .shipName{
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow:hidden;
+    text-overflow: ellipsis;
+  }
+  .shipCountBadge{
+    font-size: 12px;
+    color: rgba(255,255,255,0.75);
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.06);
+    padding: 3px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .shipItem input{ width: 18px; height: 18px; accent-color: rgb(212,175,55); }
 
-    .card{
-      background: linear-gradient(180deg, rgba(7, 64, 88, 0.92), rgba(6, 44, 62, 0.92));
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: var(--cardRadius);
-      overflow:hidden;
-      box-shadow: 0 14px 40px rgba(0,0,0,0.45);
-      transition: transform .12s ease, border-color .12s ease, filter .12s ease, box-shadow .12s ease;
-    }
-    .card:hover{
-      transform: translateY(-2px);
-      border-color: rgba(255,255,255,0.20);
-      filter: brightness(1.02);
-      box-shadow: var(--shadow);
-    }
+  /* =========================
+     CONTENT
+     ========================= */
+  .grid{ display:flex; flex-direction: column; gap: 12px; margin-top: 10px; }
 
-    .card-inner{ display:flex; gap: 14px; padding: 14px; align-items:flex-start; }
+  .card{
+    background: linear-gradient(180deg, rgba(7, 64, 88, 0.92), rgba(6, 44, 62, 0.92));
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--cardRadius);
+    overflow:hidden;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.45);
+    transition: transform .12s ease, border-color .12s ease, filter .12s ease, box-shadow .12s ease;
+  }
+  .card:hover{
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.20);
+    filter: brightness(1.02);
+    box-shadow: var(--shadow);
+  }
 
-    .thumb{
-      width: 138px;
-      height: 92px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.14);
-      overflow:hidden;
-      background: rgba(255,255,255,0.05);
-      flex: 0 0 auto;
-    }
-    .thumb img{ width:100%; height:100%; object-fit: cover; display:block; }
+  .card-inner{ display:flex; gap: 14px; padding: 14px; align-items:flex-start; }
 
-    .content{ flex:1; min-width:0; }
+  .thumb{
+    width: 138px;
+    height: 92px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.14);
+    overflow:hidden;
+    background: rgba(255,255,255,0.05);
+    flex: 0 0 auto;
+  }
+  .thumb img{ width:100%; height:100%; object-fit: cover; display:block; }
 
-    .headline{
-      display:flex;
-      align-items:flex-start;
-      justify-content: space-between;
-      gap: 12px;
-    }
+  .content{ flex:1; min-width:0; }
 
-    .name{
-      font-weight: 760;
-      font-size: 16px;
-      letter-spacing: 0.2px;
-      margin: 0;
-      line-height: 1.25;
-    }
+  .headline{
+    display:flex;
+    align-items:flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
 
-    .meta{
-      margin-top: 7px;
-      color: rgba(255,255,255,0.86);
-      font-size: 13px;
-      display:flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      line-height: 1.3;
-    }
+  .name{
+    font-weight: 760;
+    font-size: 16px;
+    letter-spacing: 0.2px;
+    margin: 0;
+    line-height: 1.25;
+  }
 
-    .tag{
-      display:inline-flex;
-      align-items:center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(0,0,0,0.20);
-      font-size: 12px;
-      color: rgba(255,255,255,0.92);
-      white-space: nowrap;
-    }
+  .meta{
+    margin-top: 7px;
+    color: rgba(255,255,255,0.86);
+    font-size: 13px;
+    display:flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    line-height: 1.3;
+  }
 
-    .link{
+  .tag{
+    display:inline-flex;
+    align-items:center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(0,0,0,0.20);
+    font-size: 12px;
+    color: rgba(255,255,255,0.92);
+    white-space: nowrap;
+  }
+
+  /* ✅ Better button format: gold-outline (not filled) */
+  .link{
     display:inline-flex;
     align-items:center;
     gap: 8px;
@@ -378,124 +389,158 @@
     text-decoration:none;
     font-size: 13px;
     white-space: nowrap;
-    box-shadow: 0 10px 24px rgba(0,0,0,0.20);
-    }
-    .link:hover{
+    box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+  }
+  .link:hover{
     background: rgba(212,175,55,0.12);
-    }
+    box-shadow: 0 14px 30px rgba(0,0,0,0.24);
+  }
 
-    .dates-block{
-      margin-top: 12px;
-      padding-top: 10px;
-      border-top: 1px solid rgba(255,255,255,0.14);
-    }
-    .dates-title{
-      font-size: 12px;
-      letter-spacing: .4px;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.78);
-      margin-bottom: 8px;
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-    }
+  .dates-block{
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.14);
+  }
+  .dates-title{
+    font-size: 12px;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.78);
+    margin-bottom: 8px;
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+  }
 
-    .datePanel{
-      background: rgba(4, 36, 52, 0.65);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 10px;
-    }
-    .dateTopRow{
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-    .dateSummary{
-      color: rgba(255,255,255,0.80);
-      font-size: 12px;
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      white-space: nowrap;
-    }
+  .datePanel{
+    background: rgba(4, 36, 52, 0.65);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 10px;
+  }
+  .dateTopRow{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .dateSummary{
+    color: rgba(255,255,255,0.80);
+    font-size: 12px;
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    white-space: nowrap;
+  }
 
-    .dateBtn{
-    border: 2px solid rgba(212,175,55,0.95);
-    background: rgba(0,0,0,0.18);
-    color: rgba(255,255,255,0.92);
+  /* keep show all as gold-filled if you want it to stand out */
+  .dateBtn{
+    border: 2px solid rgba(255,255,255,0.92);
+    background: var(--gold);
+    color: #071725;
     height: 32px;
     padding: 0 12px;
     border-radius: 12px;
     cursor:pointer;
     font-size: 12px;
-    transition: transform .12s ease, filter .12s ease, box-shadow .12s ease, background .12s ease;
+    transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
     display:inline-flex;
     align-items:center;
     gap: 8px;
     white-space: nowrap;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.20);
-    }
-    .dateBtn:hover{
+    box-shadow: 0 10px 20px rgba(0,0,0,0.22);
+  }
+  .dateBtn:hover{
     transform: translateY(-1px);
-    background: rgba(212,175,55,0.12);
-    box-shadow: 0 14px 28px rgba(0,0,0,0.28);
+    filter: brightness(0.98);
+    box-shadow: 0 14px 28px rgba(0,0,0,0.30);
+  }
+
+  .dateGrid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--dateMinCol), 1fr));
+    gap: 8px;
+  }
+  .dateCell{
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(0,0,0,0.20);
+    border-radius: 12px;
+    padding: 10px 10px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.92);
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .footerbar{
+    margin-top: 16px;
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    gap: 10px;
+    flex-wrap: wrap;
+    color: var(--muted2);
+    font-size: 12px;
+  }
+
+  /* =========================
+     MOBILE: STOP APPBAR FROM EATING SCREEN
+     ========================= */
+  @media (max-width: 720px){
+    :root{
+      --controlH: 40px;
+      --controlR: 14px;
+      --appbarPadY: 8px;
+      --appbarGap: 8px;
     }
 
-    .dateGrid{
+    .wrap{ padding-top: 12px; }
+
+    /* toolbar becomes a clean grid */
+    .toolbar{
       display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(var(--dateMinCol), 1fr));
-      gap: 8px;
-    }
-    .dateCell{
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(0,0,0,0.20);
-      border-radius: 12px;
-      padding: 10px 10px;
-      font-size: 12px;
-      color: rgba(255,255,255,0.92);
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
+      grid-template-columns: 1fr 1fr;
       gap: 10px;
-    }
-    .dateCell:hover{
-      border-color: rgba(255,255,255,0.22);
-      background: rgba(0,0,0,0.24);
-    }
-    .dateCell small{
-      color: rgba(255,255,255,0.70);
-      font-size: 11px;
-      white-space: nowrap;
+      padding: 10px;
+      border-radius: 16px;
     }
 
-    .footerbar{
-      margin-top: 16px;
-      display:flex;
-      justify-content: space-between;
-      align-items:center;
-      gap: 10px;
-      flex-wrap: wrap;
-      color: var(--muted2);
-      font-size: 12px;
+    /* search takes full row */
+    .field{
+      grid-column: 1 / -1;
+      min-width: 0;
     }
 
-    @media (max-width: 900px){
-      .field{ min-width: 100%; }
-      .toolbar{ padding: 10px; }
-      .card-inner{ flex-direction: column; }
-      .thumb{ width:100%; height:170px; }
-      .headline{ flex-direction: column; align-items:flex-start; }
+    /* stop that “giant reload bar” */
+    .btn.primary{
+      justify-self: start;     /* keeps it button-sized */
+      width: auto;             /* no full-width stretching */
+      padding: 0 14px;
     }
-    @media (max-width: 520px){
-      .select{ min-width: 100%; }
-      .btn{ width: 100%; justify-content:center; }
-    }
-  </style>
+
+    /* make selects fit the grid cells nicely */
+    .select{ width: 100%; min-width: 0; }
+    .shipWrap{ width: 100%; }
+    #shipBtn{ width: 100%; }
+
+    /* when narrow, cards breathe */
+    .card-inner{ flex-direction: column; }
+    .thumb{ width:100%; height:170px; }
+    .headline{ flex-direction: column; align-items:flex-start; }
+  }
+
+  @media (max-width: 420px){
+    .toolbar{ grid-template-columns: 1fr; }
+    .btn, .select, .field, #shipBtn{ width: 100%; }
+    .btn.primary{ justify-self: stretch; } /* ok on ultra small */
+  }
+</style>
+
 </head>
 
 <body>
@@ -890,3 +935,4 @@
   </script>
 </body>
 </html>
+
