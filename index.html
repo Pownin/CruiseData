@@ -7,20 +7,24 @@
 
   <style>
     :root{
-    --bgTop: #0b0a12;
-    --bgMid: #0c0716;
-    --bgBot: #05040c;
+      --bgTop: #071725;
+      --bgMid: #050f1a;
+      --bgBot: #03070d;
+
+      --cardBase: rgba(1, 69, 103, 0.78);
+      --panelBase: rgba(1, 69, 103, 0.62);
+      --panelBase2: rgba(1, 69, 103, 0.52);
 
       --text: rgba(255,255,255,0.93);
-      --muted: rgba(255,255,255,0.82);
-      --muted2: rgba(255,255,255,0.64);
-      --border: rgba(255,255,255,0.12);
+      --muted: rgba(255,255,255,0.78);
+      --muted2: rgba(255,255,255,0.62);
+      --border: rgba(255,255,255,0.14);
 
-      --shadow: 0 16px 46px rgba(0,0,0,0.48);
-      --shadow2: 0 10px 26px rgba(0,0,0,0.32);
+      --shadow: 0 18px 60px rgba(0,0,0,0.55);
+      --shadow2: 0 10px 26px rgba(0,0,0,0.35);
 
-      --accent:#c084fc;
-      --accent2:#f472b6;
+      --gold: #d4af37;
+
       --good:#34d399;
       --warn:#fbbf24;
       --bad:#fb7185;
@@ -28,10 +32,9 @@
       --cardRadius: 18px;
       --dateMinCol: 200px;
 
-      --panelBg: rgba(18, 10, 44, 0.78);
-      --panelBg2: rgba(18, 10, 44, 0.70);
-      --panelBg3: rgba(18, 10, 44, 0.62);
-      --chipBg: rgba(255,255,255,0.06);
+      /* NEW */
+      --controlH: 42px;
+      --controlR: 16px;
     }
 
     *{ box-sizing:border-box; }
@@ -42,30 +45,8 @@
       color: var(--text);
       min-height:100vh;
       background: linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 45%, var(--bgBot) 100%);
-      position: relative;
       overflow-x: hidden;
     }
-
-    body::before{
-      content:"";
-      position: fixed;
-      inset: 0;
-      pointer-events:none;
-      z-index: 0;
-
-      background:
-        radial-gradient(1000px 600px at 20% -10%, rgba(192,132,252,0.22), transparent 80%),
-        radial-gradient(900px 600px at 90% 5%, rgba(244,114,182,0.12), transparent 80%),
-        linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.35)),
-      background-repeat: no-repeat, no-repeat, no-repeat, repeat;
-      background-size: auto, auto, auto, 120px 104px;
-
-      opacity: 0.22;
-      mix-blend-mode: normal;
-      filter: saturate(1.0);
-    }
-
-    .appbar, .wrap { position: relative; z-index: 1; }
 
     .wrap{
       max-width: 1220px;
@@ -73,23 +54,33 @@
       padding: 18px 16px 64px;
     }
 
+    /* =========================
+       APPBAR (SLEEK 2-ROW)
+       ========================= */
     .appbar{
       position: sticky;
       top:0;
       z-index:20;
-      padding: 14px 16px;
+      padding: 12px 16px;
       margin: 0 -16px 14px;
-      backdrop-filter: none;
-      background: rgba(7,6,17,0.98);
+      backdrop-filter: none !important;
+      background: rgba(6, 8, 10, 0.98) !important;
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
+
     .appbar-inner{
       max-width: 1220px;
       margin: 0 auto;
       display:flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .topline{
+      display:flex;
       align-items:flex-start;
       justify-content: space-between;
-      gap: 12px;
+      gap: 14px;
       flex-wrap: wrap;
     }
 
@@ -109,8 +100,8 @@
     }
     .title h1 .mark{
       width: 10px; height:10px; border-radius: 999px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      box-shadow: 0 0 0 4px rgba(192,132,252,0.12);
+      background: var(--gold);
+      box-shadow: 0 0 0 4px rgba(212,175,55,0.18);
       display:inline-block;
     }
 
@@ -126,10 +117,10 @@
       display:inline-flex;
       align-items:center;
       gap: 7px;
-      padding: 5px 10px;
-      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border: 1px solid rgba(255,255,255,0.14);
       border-radius: 999px;
-      background: rgba(10,10,14,0.55);
+      background: rgba(0,0,0,0.28);
       color: var(--muted);
       white-space: nowrap;
     }
@@ -138,88 +129,103 @@
     .dot.warn{ background: var(--warn); }
     .dot.bad{ background: var(--bad); }
 
-    .controls{
+    /* Toolbar strip (makes everything feel "one unit") */
+    .toolbar{
       display:flex;
       align-items:center;
       gap: 10px;
       flex-wrap: wrap;
-      justify-content: flex-end;
-      flex: 1;
+      padding: 10px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.22);
+      box-shadow: 0 16px 46px rgba(0,0,0,0.35);
     }
 
+    /* =========================
+       CONTROLS (UNIFIED HEIGHT)
+       ========================= */
     .btn{
-      border: 1px solid rgba(255,255,255,0.16);
-      background: var(--panelBg3);
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 14px;
+      height: var(--controlH);
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.92);
+      padding: 0 14px;
+      border-radius: var(--controlR);
       cursor: pointer;
       font-size: 14px;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
+      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
       display:inline-flex;
       align-items:center;
+      justify-content:center;
       gap: 8px;
       user-select:none;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+      white-space: nowrap;
     }
     .btn:hover{
-      background: var(--panelBg2);
-      border-color: rgba(255,255,255,0.28);
       transform: translateY(-1px);
-      box-shadow: 0 10px 26px rgba(0,0,0,0.25);
+      filter: brightness(1.03);
+      box-shadow: 0 14px 34px rgba(0,0,0,0.24);
+      border-color: rgba(255,255,255,0.22);
     }
     .btn:active{ transform: translateY(0); }
 
+    /* Reload should NOT be a giant white badge - make it elegant gold-outline */
     .btn.primary{
-      border-color: rgba(192,132,252,0.55);
-      background: linear-gradient(135deg, rgba(192,132,252,0.26), rgba(244,114,182,0.16));
+    border: 2px solid rgba(212,175,55,0.95);
+    background: rgba(0,0,0,0.22);
+    color: rgba(255,255,255,0.92);
     }
     .btn.primary:hover{
-      border-color: rgba(192,132,252,0.78);
-      background: linear-gradient(135deg, rgba(192,132,252,0.30), rgba(244,114,182,0.20));
+    background: rgba(212,175,55,0.12);
+    box-shadow: 0 0 0 4px rgba(212,175,55,0.10);
     }
 
     .field{
+      height: var(--controlH);
       display:flex;
       align-items:center;
       gap: 10px;
-      padding: 10px 12px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(10,10,14,0.55);
-      min-width: min(560px, 92vw);
+      padding: 0 12px;
+      border-radius: var(--controlR);
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.28);
+      min-width: min(520px, 92vw);
     }
     .field:focus-within{
-      border-color: rgba(192,132,252,0.65);
-      box-shadow: 0 0 0 4px rgba(192,132,252,0.14);
-      background: var(--panelBg2);
+      border-color: rgba(212,175,55,0.70);
+      box-shadow: 0 0 0 4px rgba(212,175,55,0.14);
     }
     .field input{
       flex: 1;
+      height: 100%;
       background: transparent;
       border: none;
       outline:none;
       color: var(--text);
       font-size: 14px;
     }
-    .field input::placeholder{ color: rgba(255,255,255,0.50); }
+    .field input::placeholder{ color: rgba(255,255,255,0.45); }
 
     .select{
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(10,10,14,0.55);
+      height: var(--controlH);
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.28);
       color: var(--text);
-      padding: 10px 12px;
-      border-radius: 14px;
+      padding: 0 12px;
+      border-radius: var(--controlR);
       font-size: 14px;
       outline:none;
       min-width: 170px;
     }
     .select:focus{
-      border-color: rgba(192,132,252,0.65);
-      box-shadow: 0 0 0 4px rgba(192,132,252,0.12);
-      background: var(--panelBg2);
+      border-color: rgba(212,175,55,0.70);
+      box-shadow: 0 0 0 4px rgba(212,175,55,0.12);
     }
     .select option{ color:#111; }
 
+    /* ship menu */
     .shipWrap{ position:relative; display:inline-block; }
     .shipMenu{
       position:absolute;
@@ -230,10 +236,9 @@
       overflow:auto;
       padding: 12px;
       border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(12, 7, 30, 0.98);
-      backdrop-filter: none;
-      box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(3, 7, 13, 0.98);
+      box-shadow: var(--shadow);
       z-index: 60;
       display:none;
     }
@@ -245,7 +250,7 @@
       margin-bottom: 8px;
     }
     .shipMenuHint{
-      color: rgba(255,255,255,0.72);
+      color: rgba(255,255,255,0.70);
       font-size: 12px;
       margin-bottom: 10px;
       line-height:1.35;
@@ -258,14 +263,14 @@
       gap: 10px;
       padding: 10px 10px;
       border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
       cursor:pointer;
       user-select:none;
     }
     .shipItem:hover{
-      border-color: rgba(192,132,252,0.35);
-      background: rgba(255,255,255,0.08);
+      border-color: rgba(212,175,55,0.45);
+      background: rgba(255,255,255,0.07);
     }
     .shipLeft{ display:flex; align-items:center; gap: 10px; min-width: 0; }
     .shipName{
@@ -277,36 +282,32 @@
     }
     .shipCountBadge{
       font-size: 12px;
-      color: rgba(255,255,255,0.76);
+      color: rgba(255,255,255,0.75);
       border: 1px solid rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.06);
       padding: 3px 8px;
       border-radius: 999px;
       white-space: nowrap;
     }
-    .shipItem input{ width: 18px; height: 18px; accent-color: rgb(192,132,252); }
+    .shipItem input{ width: 18px; height: 18px; accent-color: rgb(212,175,55); }
 
-    .hint{
-      color: var(--muted);
-      font-size: 13px;
-      margin: 10px 0 16px;
-      line-height: 1.35;
-    }
-
+    /* =========================
+       CONTENT
+       ========================= */
     .grid{ display:flex; flex-direction: column; gap: 12px; margin-top: 10px; }
 
     .card{
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(10,10,14,0.72);
+      background: linear-gradient(180deg, rgba(7, 64, 88, 0.92), rgba(6, 44, 62, 0.92));
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: var(--cardRadius);
       overflow:hidden;
-      box-shadow: var(--shadow2);
-      transition: transform .12s ease, border-color .12s ease, background .12s ease, box-shadow .12s ease;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.45);
+      transition: transform .12s ease, border-color .12s ease, filter .12s ease, box-shadow .12s ease;
     }
     .card:hover{
       transform: translateY(-2px);
-      background: var(--panelBg2);
-      border-color: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.20);
+      filter: brightness(1.02);
       box-shadow: var(--shadow);
     }
 
@@ -316,9 +317,9 @@
       width: 138px;
       height: 92px;
       border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.14);
       overflow:hidden;
-      background: rgba(255,255,255,0.04);
+      background: rgba(255,255,255,0.05);
       flex: 0 0 auto;
     }
     .thumb img{ width:100%; height:100%; object-fit: cover; display:block; }
@@ -333,7 +334,7 @@
     }
 
     .name{
-      font-weight: 750;
+      font-weight: 760;
       font-size: 16px;
       letter-spacing: 0.2px;
       margin: 0;
@@ -342,7 +343,7 @@
 
     .meta{
       margin-top: 7px;
-      color: var(--muted);
+      color: rgba(255,255,255,0.86);
       font-size: 13px;
       display:flex;
       flex-wrap: wrap;
@@ -358,41 +359,41 @@
       padding: 4px 10px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(0,0,0,0.22);
+      background: rgba(0,0,0,0.20);
       font-size: 12px;
       color: rgba(255,255,255,0.92);
       white-space: nowrap;
     }
 
     .link{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 9px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(192,132,252,0.52);
-      background: rgba(192,132,252,0.18);
-      color: var(--text);
-      text-decoration:none;
-      font-size: 13px;
-      white-space: nowrap;
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 14px;
+    border: 2px solid rgba(212,175,55,0.95);
+    background: rgba(0,0,0,0.18);
+    color: rgba(255,255,255,0.92);
+    text-decoration:none;
+    font-size: 13px;
+    white-space: nowrap;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.20);
     }
     .link:hover{
-      border-color: rgba(192,132,252,0.75);
-      background: rgba(192,132,252,0.24);
-      text-decoration:none;
+    background: rgba(212,175,55,0.12);
     }
 
     .dates-block{
       margin-top: 12px;
       padding-top: 10px;
-      border-top: 1px solid rgba(255,255,255,0.10);
+      border-top: 1px solid rgba(255,255,255,0.14);
     }
     .dates-title{
       font-size: 12px;
       letter-spacing: .4px;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.64);
+      color: rgba(255,255,255,0.78);
       margin-bottom: 8px;
       display:flex;
       align-items:center;
@@ -401,8 +402,8 @@
     }
 
     .datePanel{
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(10,10,14,0.60);
+      background: rgba(4, 36, 52, 0.65);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 16px;
       padding: 10px;
     }
@@ -415,31 +416,34 @@
       margin-bottom: 10px;
     }
     .dateSummary{
-      color: rgba(255,255,255,0.72);
+      color: rgba(255,255,255,0.80);
       font-size: 12px;
       display:flex;
       align-items:center;
       gap: 10px;
       white-space: nowrap;
     }
+
     .dateBtn{
-      border: 1px solid rgba(244,114,182,0.55);
-      background: rgba(244,114,182,0.18);
-      color: var(--text);
-      padding: 7px 10px;
-      border-radius: 12px;
-      cursor:pointer;
-      font-size: 12px;
-      transition: background .12s ease, border-color .12s ease, transform .12s ease;
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      white-space: nowrap;
+    border: 2px solid rgba(212,175,55,0.95);
+    background: rgba(0,0,0,0.18);
+    color: rgba(255,255,255,0.92);
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 12px;
+    cursor:pointer;
+    font-size: 12px;
+    transition: transform .12s ease, filter .12s ease, box-shadow .12s ease, background .12s ease;
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    white-space: nowrap;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.20);
     }
     .dateBtn:hover{
-      border-color: rgba(244,114,182,0.78);
-      background: rgba(244,114,182,0.22);
-      transform: translateY(-1px);
+    transform: translateY(-1px);
+    background: rgba(212,175,55,0.12);
+    box-shadow: 0 14px 28px rgba(0,0,0,0.28);
     }
 
     .dateGrid{
@@ -448,8 +452,8 @@
       gap: 8px;
     }
     .dateCell{
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.20);
       border-radius: 12px;
       padding: 10px 10px;
       font-size: 12px;
@@ -460,11 +464,11 @@
       gap: 10px;
     }
     .dateCell:hover{
-      border-color: rgba(192,132,252,0.35);
-      background: rgba(0,0,0,0.28);
+      border-color: rgba(255,255,255,0.22);
+      background: rgba(0,0,0,0.24);
     }
     .dateCell small{
-      color: rgba(255,255,255,0.62);
+      color: rgba(255,255,255,0.70);
       font-size: 11px;
       white-space: nowrap;
     }
@@ -479,23 +483,17 @@
       color: var(--muted2);
       font-size: 12px;
     }
-    .kbd{
-      border: 1px solid rgba(255,255,255,0.16);
-      background: rgba(0,0,0,0.22);
-      border-radius: 8px;
-      padding: 2px 8px;
-      font-size: 12px;
-      color: rgba(255,255,255,0.80);
-    }
 
-    @media (max-width: 780px){
+    @media (max-width: 900px){
       .field{ min-width: 100%; }
-      .select{ min-width: 150px; }
+      .toolbar{ padding: 10px; }
       .card-inner{ flex-direction: column; }
       .thumb{ width:100%; height:170px; }
       .headline{ flex-direction: column; align-items:flex-start; }
-      .controls{ width:100%; justify-content:flex-start; }
-      :root{ --dateMinCol: 170px; }
+    }
+    @media (max-width: 520px){
+      .select{ min-width: 100%; }
+      .btn{ width: 100%; justify-content:center; }
     }
   </style>
 </head>
@@ -503,16 +501,18 @@
 <body>
   <div class="appbar">
     <div class="appbar-inner">
-      <div class="title">
-        <h1><span class="mark"></span> Cruise Data</h1>
-        <div class="subtitle">
-          <span class="pill"><span id="statusDot" class="dot warn"></span><span id="status">Loading…</span></span>
-          <span class="pill"><span class="dot"></span>Shows first 600 matches for speed</span>
-          <span class="pill"><span class="dot"></span>Ship filter is multi-select</span>
+      <div class="topline">
+        <div class="title">
+          <h1><span class="mark"></span> Cruise Data</h1>
+          <div class="subtitle">
+            <span class="pill"><span id="statusDot" class="dot warn"></span><span id="status">Loading…</span></span>
+            <span class="pill"><span class="dot"></span>Shows first 500 matches for speed</span>
+            <span class="pill"><span class="dot"></span>Ship filter is multi-select</span>
+          </div>
         </div>
       </div>
 
-      <div class="controls">
+      <div class="toolbar">
         <button id="reload" class="btn primary" title="Reload cruiseDataNew.json">♻️ Reload</button>
 
         <div class="field" title="Search across all fields">
@@ -532,7 +532,7 @@
           <div id="shipMenu" class="shipMenu">
             <div class="shipMenuTop">
               <div style="font-weight:800;">Filter by ship</div>
-              <button id="shipClear" class="btn" type="button" style="padding:8px 10px;">Clear</button>
+              <button id="shipClear" class="btn" type="button">Clear</button>
             </div>
             <div class="shipMenuHint">Pick one or more ships. Results update instantly.</div>
             <div id="shipList" class="shipList"></div>
@@ -549,11 +549,6 @@
   </div>
 
   <div class="wrap">
-    <div class="hint">
-      Tip: try “Star Breeze”, “Tahiti”, or a port name.
-      Use <span class="kbd">Ctrl</span> + <span class="kbd">F</span> if you want, but the search box is faster.
-    </div>
-
     <div id="out" class="grid"></div>
 
     <div class="footerbar">
@@ -582,7 +577,6 @@
     const shipCount = document.getElementById("shipCount");
 
     const MAX_PREVIEW = 10;
-    const GRID_THRESHOLD = 0;
     const AUTO_COLLAPSE_OVER = 15;
 
     function setStatus(kind, msg){
@@ -707,7 +701,6 @@
       const total = dateRanges.length;
       if (!total) return `<div class="datePanel"><div class="dateSummary">No dates</div></div>`;
 
-      const isGrid = total > GRID_THRESHOLD;
       const preview = dateRanges.slice(0, MAX_PREVIEW);
       const extra = dateRanges.slice(MAX_PREVIEW);
       const hasExtra = extra.length > 0;
@@ -715,26 +708,20 @@
 
       const moreId = `more-${cssSafe(toggleKey)}`;
 
-      const previewHtml = isGrid
-        ? `<div class="dateGrid">
-             ${preview.map((d,i) => `<div class="dateCell"><span>${escapeHtml(d)}</span><small>#${i+1}</small></div>`).join("")}
-           </div>`
-        : `<div class="chipRow">
-             ${preview.map(d => `<span class="chip">${escapeHtml(d)}</span>`).join("")}
-           </div>`;
+      const previewHtml = `
+        <div class="dateGrid">
+          ${preview.map((d,i) => `<div class="dateCell"><span>${escapeHtml(d)}</span><small>#${i+1}</small></div>`).join("")}
+        </div>
+      `;
 
-      const extraHtml = hasExtra ? (
-        isGrid
-          ? `<div class="dateGrid" id="${moreId}" style="display:${autoCollapsed ? "none" : "grid"}; margin-top:10px;">
-               ${extra.map((d,i) => `<div class="dateCell"><span>${escapeHtml(d)}</span><small>#${MAX_PREVIEW + i + 1}</small></div>`).join("")}
-             </div>`
-          : `<div class="chipRow" id="${moreId}" style="display:${autoCollapsed ? "none" : "flex"}; margin-top:10px;">
-               ${extra.map(d => `<span class="chip">${escapeHtml(d)}</span>`).join("")}
-             </div>`
-      ) : "";
+      const extraHtml = hasExtra ? `
+        <div class="dateGrid" id="${moreId}" style="display:${autoCollapsed ? "none" : "grid"}; margin-top:10px;">
+          ${extra.map((d,i) => `<div class="dateCell"><span>${escapeHtml(d)}</span><small>#${MAX_PREVIEW + i + 1}</small></div>`).join("")}
+        </div>
+      ` : "";
 
       const btnHtml = hasExtra
-        ? `<button class="dateBtn" data-toggle="${escapeHtml(toggleKey)}" data-total="${total}">
+        ? `<button class="dateBtn" type="button" data-toggle="${escapeHtml(toggleKey)}" data-total="${total}">
              ${autoCollapsed ? `Show all (${total})` : `Hide extra dates`}
            </button>`
         : "";
@@ -754,7 +741,7 @@
     function render(list) {
       out.innerHTML = "";
 
-      const capped = list.slice(0, 600);
+      const capped = list.slice(0, 500);
       const frag = document.createDocumentFragment();
 
       capped.forEach((item) => {
@@ -798,9 +785,7 @@
               ${journey ? `<div class="meta" style="margin-top:8px;">🧭 ${escapeHtml(journey)}</div>` : ``}
 
               <div class="dates-block">
-                <div class="dates-title">
-                  <span>Available dates</span>
-                </div>
+                <div class="dates-title"><span>Available dates</span></div>
                 ${buildDatesHtml(dateRanges, toggleKey)}
               </div>
             </div>
@@ -812,19 +797,21 @@
 
       out.appendChild(frag);
 
-      const shown = Math.min(list.length, 600);
+      const shown = Math.min(list.length, 500);
       countNote.textContent = `Matches: ${list.length} (rendered: ${shown})`;
 
-      out.querySelectorAll("[data-toggle]").forEach(el => {
-        el.addEventListener("click", () => {
-          const key = el.getAttribute("data-toggle");
-          const total = el.getAttribute("data-total") || "";
+      out.querySelectorAll("[data-toggle]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const key = btn.getAttribute("data-toggle");
+          const total = btn.getAttribute("data-total") || "";
+          if (!key) return;
+
           const more = document.getElementById(`more-${cssSafe(key)}`);
           if (!more) return;
 
           const isHidden = more.style.display === "none";
-          more.style.display = isHidden ? (more.classList.contains("dateGrid") ? "grid" : "flex") : "none";
-          el.textContent = isHidden ? "Hide extra dates" : `Show all (${total})`;
+          more.style.display = isHidden ? "grid" : "none";
+          btn.textContent = isHidden ? "Hide extra dates" : `Show all (${total})`;
         });
       });
     }
@@ -849,7 +836,7 @@
 
       render(list);
 
-      const shown = Math.min(list.length, 600);
+      const shown = Math.min(list.length, 500);
       setStatus("good", `Loaded ${DATA.length} items · Showing ${shown} of ${list.length} match${list.length===1?"":"es"}`);
     }
 
@@ -903,8 +890,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
