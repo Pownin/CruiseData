@@ -30,14 +30,12 @@
     --controlH: 42px;
     --controlR: 16px;
 
-    /* sticky header sizing */
     --appbarPadY: 10px;
     --appbarGap: 10px;
   }
 
   *{ box-sizing:border-box; }
 
-  /* ✅ Prevent “white behind transparent stuff” on mobile */
   html, body{
     height: 100%;
     background-color: var(--bgBot);
@@ -51,7 +49,6 @@
     background: linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 45%, var(--bgBot) 100%);
     overflow-x: hidden;
 
-    /* stops rubber-band showing weird background flashes */
     overscroll-behavior: none;
   }
 
@@ -61,9 +58,6 @@
     padding: 18px 16px 64px;
   }
 
-  /* =========================
-     APPBAR (sticky, compact)
-     ========================= */
   .appbar{
     position: sticky;
     top: 0;
@@ -71,12 +65,10 @@
     padding: var(--appbarPadY) 16px;
     margin: 0 -16px 14px;
 
-    /* ✅ make it solid so nothing “bleeds” through */
     background: rgba(6, 8, 10, 0.98) !important;
     border-bottom: 1px solid rgba(255,255,255,0.08);
     backdrop-filter: none !important;
 
-    /* subtle depth without becoming a giant blob */
     box-shadow: 0 10px 26px rgba(0,0,0,0.35);
   }
 
@@ -111,12 +103,12 @@
 
   .subtitle{
     display:flex;
-    flex-wrap: nowrap;             /* ✅ keep one row */
+    flex-wrap: nowrap;
     gap: 8px;
     align-items:center;
     font-size: 12px;
     color: var(--muted);
-    overflow-x: auto;              /* ✅ scroll pills horizontally */
+    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 2px;
   }
@@ -141,9 +133,6 @@
   .dot.warn{ background: var(--warn); }
   .dot.bad{ background: var(--bad); }
 
-  /* =========================
-     TOOLBAR (single unit)
-     ========================= */
   .toolbar{
     display:flex;
     align-items:center;
@@ -155,9 +144,6 @@
     background: rgba(0,0,0,0.22);
   }
 
-  /* =========================
-     CONTROLS
-     ========================= */
   .btn{
     height: var(--controlH);
     border: 1px solid rgba(255,255,255,0.14);
@@ -182,7 +168,6 @@
     box-shadow: 0 12px 26px rgba(0,0,0,0.22);
   }
 
-  /* Reload: slimmer + not “giant yellow bar” */
   .btn.primary{
     border: 2px solid rgba(212,175,55,0.95);
     background: rgba(255,255,255,0.03);
@@ -301,9 +286,6 @@
   }
   .shipItem input{ width: 18px; height: 18px; accent-color: rgb(212,175,55); }
 
-  /* =========================
-     CONTENT
-     ========================= */
   .grid{ display:flex; flex-direction: column; gap: 12px; margin-top: 10px; }
 
   .card{
@@ -375,7 +357,6 @@
     white-space: nowrap;
   }
 
-  /* ✅ Better button format: gold-outline (not filled) */
   .link{
     display:inline-flex;
     align-items:center;
@@ -436,7 +417,6 @@
     white-space: nowrap;
   }
 
-  /* keep show all as gold-filled if you want it to stand out */
   .dateBtn{
     border: 2px solid rgba(255,255,255,0.92);
     background: var(--gold);
@@ -477,6 +457,13 @@
     gap: 10px;
   }
 
+  .dateGrid{
+  align-content: start;
+  grid-auto-flow: row dense;
+}
+
+.dateCell.isHidden{ display:none; }
+
   .footerbar{
     margin-top: 16px;
     display:flex;
@@ -488,9 +475,6 @@
     font-size: 12px;
   }
 
-  /* =========================
-     MOBILE: STOP APPBAR FROM EATING SCREEN
-     ========================= */
   @media (max-width: 720px){
     :root{
       --controlH: 40px;
@@ -501,7 +485,6 @@
 
     .wrap{ padding-top: 12px; }
 
-    /* toolbar becomes a clean grid */
     .toolbar{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -510,25 +493,21 @@
       border-radius: 16px;
     }
 
-    /* search takes full row */
     .field{
       grid-column: 1 / -1;
       min-width: 0;
     }
 
-    /* stop that “giant reload bar” */
     .btn.primary{
-      justify-self: start;     /* keeps it button-sized */
-      width: auto;             /* no full-width stretching */
+      justify-self: start;
+      width: auto;
       padding: 0 14px;
     }
 
-    /* make selects fit the grid cells nicely */
     .select{ width: 100%; min-width: 0; }
     .shipWrap{ width: 100%; }
     #shipBtn{ width: 100%; }
 
-    /* when narrow, cards breathe */
     .card-inner{ flex-direction: column; }
     .thumb{ width:100%; height:170px; }
     .headline{ flex-direction: column; align-items:flex-start; }
@@ -537,7 +516,7 @@
   @media (max-width: 420px){
     .toolbar{ grid-template-columns: 1fr; }
     .btn, .select, .field, #shipBtn{ width: 100%; }
-    .btn.primary{ justify-self: stretch; } /* ok on ultra small */
+    .btn.primary{ justify-self: stretch; }
   }
 </style>
 
@@ -743,45 +722,44 @@
     });
 
     function buildDatesHtml(dateRanges, toggleKey) {
-      const total = dateRanges.length;
-      if (!total) return `<div class="datePanel"><div class="dateSummary">No dates</div></div>`;
+        const total = dateRanges.length;
+        if (!total) return `<div class="datePanel"><div class="dateSummary">No dates</div></div>`;
 
-      const preview = dateRanges.slice(0, MAX_PREVIEW);
-      const extra = dateRanges.slice(MAX_PREVIEW);
-      const hasExtra = extra.length > 0;
-      const autoCollapsed = total > AUTO_COLLAPSE_OVER;
+        const hasExtra = total > MAX_PREVIEW;
+        const autoCollapsed = total > AUTO_COLLAPSE_OVER;
 
-      const moreId = `more-${cssSafe(toggleKey)}`;
+        const panelId = cssSafe(toggleKey);
 
-      const previewHtml = `
-        <div class="dateGrid">
-          ${preview.map((d,i) => `<div class="dateCell"><span>${escapeHtml(d)}</span><small>#${i+1}</small></div>`).join("")}
-        </div>
-      `;
+        const btnHtml = hasExtra
+            ? `<button class="dateBtn" type="button"
+                data-panel="${panelId}"
+                data-total="${total}"
+                data-collapsed="${autoCollapsed ? "1" : "0"}">
+                ${autoCollapsed ? `Show all (${total})` : `Hide extra dates`}
+            </button>`
+            : "";
 
-      const extraHtml = hasExtra ? `
-        <div class="dateGrid" id="${moreId}" style="display:${autoCollapsed ? "none" : "grid"}; margin-top:10px;">
-          ${extra.map((d,i) => `<div class="dateCell"><span>${escapeHtml(d)}</span><small>#${MAX_PREVIEW + i + 1}</small></div>`).join("")}
-        </div>
-      ` : "";
+        const cells = dateRanges.map((d, i) => {
+            const isExtra = i >= MAX_PREVIEW;
+            const hidden = (isExtra && autoCollapsed) ? " isHidden" : "";
+            return `<div class="dateCell${hidden}" data-extra="${isExtra ? "1" : "0"}">
+                    <span>${escapeHtml(d)}</span>
+                    <small>#${i+1}</small>
+                    </div>`;
+        }).join("");
 
-      const btnHtml = hasExtra
-        ? `<button class="dateBtn" type="button" data-toggle="${escapeHtml(toggleKey)}" data-total="${total}">
-             ${autoCollapsed ? `Show all (${total})` : `Hide extra dates`}
-           </button>`
-        : "";
-
-      return `
-        <div class="datePanel">
-          <div class="dateTopRow">
-            <div class="dateSummary">Showing ${Math.min(MAX_PREVIEW, total)} of ${total}</div>
-            ${btnHtml}
-          </div>
-          ${previewHtml}
-          ${extraHtml}
-        </div>
-      `;
-    }
+        return `
+            <div class="datePanel" data-panel="${panelId}">
+            <div class="dateTopRow">
+                <div class="dateSummary">Showing ${Math.min(MAX_PREVIEW, total)} of ${total}</div>
+                ${btnHtml}
+            </div>
+            <div class="dateGrid">
+                ${cells}
+            </div>
+            </div>
+        `;
+        }
 
     function render(list) {
       out.innerHTML = "";
@@ -845,20 +823,29 @@
       const shown = Math.min(list.length, 500);
       countNote.textContent = `Matches: ${list.length} (rendered: ${shown})`;
 
-      out.querySelectorAll("[data-toggle]").forEach(btn => {
+      out.querySelectorAll(".dateBtn[data-panel]").forEach(btn => {
         btn.addEventListener("click", () => {
-          const key = btn.getAttribute("data-toggle");
-          const total = btn.getAttribute("data-total") || "";
-          if (!key) return;
+            const panelId = btn.getAttribute("data-panel");
+            const total = btn.getAttribute("data-total") || "";
+            if (!panelId) return;
 
-          const more = document.getElementById(`more-${cssSafe(key)}`);
-          if (!more) return;
+            const panel = out.querySelector(`.datePanel[data-panel="${panelId}"]`);
+            if (!panel) return;
 
-          const isHidden = more.style.display === "none";
-          more.style.display = isHidden ? "grid" : "none";
-          btn.textContent = isHidden ? "Hide extra dates" : `Show all (${total})`;
+            const extraCells = panel.querySelectorAll('.dateCell[data-extra="1"]');
+            const collapsed = btn.getAttribute("data-collapsed") === "1";
+
+            if (collapsed) {
+            extraCells.forEach(c => c.classList.remove("isHidden"));
+            btn.textContent = "Hide extra dates";
+            btn.setAttribute("data-collapsed", "0");
+            } else {
+            extraCells.forEach(c => c.classList.add("isHidden"));
+            btn.textContent = `Show all (${total})`;
+            btn.setAttribute("data-collapsed", "1");
+            }
         });
-      });
+        });
     }
 
     function applyFilters() {
