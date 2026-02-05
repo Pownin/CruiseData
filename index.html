@@ -1747,8 +1747,8 @@
       try {
         setStatus("warn", "Loading…");
 
-        const res = await fetch("./cruiseDataOld.json", { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status} (couldn't find cruiseDataOld.json)`);
+        const res = await fetch("./cruiseDataNew.json", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status} (couldn't find cruiseDataNew.json)`);
 
         const raw = await res.json();
 
