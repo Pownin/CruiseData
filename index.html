@@ -48,7 +48,6 @@
     min-height:100vh;
     background: linear-gradient(180deg, var(--bgTop) 0%, var(--bgMid) 45%, var(--bgBot) 100%);
     overflow-x: hidden;
-
     overscroll-behavior: none;
   }
 
@@ -64,11 +63,9 @@
     z-index: 50;
     padding: var(--appbarPadY) 16px;
     margin: 0 -16px 14px;
-
     background: rgba(6, 8, 10, 0.98) !important;
     border-bottom: 1px solid rgba(255,255,255,0.08);
     backdrop-filter: none !important;
-
     box-shadow: 0 10px 26px rgba(0,0,0,0.35);
   }
 
@@ -219,7 +216,7 @@
     border-color: rgba(212,175,55,0.70);
     box-shadow: 0 0 0 4px rgba(212,175,55,0.12);
   }
-  .select option{ color:#111; }
+  .select option{ color:#fffdfd; background-color: #02000b;}
 
   .shipWrap{ position:relative; display:inline-block; }
   .shipMenu{
@@ -233,7 +230,7 @@
     border-radius: 16px;
     border: 1px solid rgba(255,255,255,0.14);
     background: rgba(3, 7, 13, 0.98);
-    box-shadow: var(--shadow);
+    box-shadow: 0 18px 60px rgba(0,0,0,0.55);
     z-index: 60;
     display:none;
   }
@@ -291,7 +288,7 @@
   .card{
     background: linear-gradient(180deg, rgba(7, 64, 88, 0.92), rgba(6, 44, 62, 0.92));
     border: 1px solid rgba(255,255,255,0.08);
-    border-radius: var(--cardRadius);
+    border-radius: 18px;
     overflow:hidden;
     box-shadow: 0 14px 40px rgba(0,0,0,0.45);
     transition: transform .12s ease, border-color .12s ease, filter .12s ease, box-shadow .12s ease;
@@ -300,7 +297,7 @@
     transform: translateY(-2px);
     border-color: rgba(255,255,255,0.20);
     filter: brightness(1.02);
-    box-shadow: var(--shadow);
+    box-shadow: 0 18px 60px rgba(0,0,0,0.55);
   }
 
   .card-inner{ display:flex; gap: 14px; padding: 14px; align-items:flex-start; }
@@ -309,7 +306,7 @@
     width: 138px;
     height: 92px;
     border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.14);
+    border: 1px solid rgba(212,175,55,0.70);
     overflow:hidden;
     background: rgba(255,255,255,0.05);
     flex: 0 0 auto;
@@ -418,32 +415,37 @@
   }
 
   .dateBtn{
-    border: 2px solid rgba(255,255,255,0.92);
-    background: var(--gold);
-    color: #071725;
-    height: 32px;
-    padding: 0 12px;
-    border-radius: 12px;
-    cursor:pointer;
-    font-size: 12px;
-    transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
     display:inline-flex;
     align-items:center;
     gap: 8px;
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 14px;
+    border: 2px solid rgba(212,175,55,0.95);
+    background: rgba(0,0,0,0.18);
+    color: rgba(255,255,255,0.92);
+    cursor:pointer;
+    font-size: 13px;
     white-space: nowrap;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.22);
+    box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+    transition: transform .12s ease, filter .12s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
   }
   .dateBtn:hover{
     transform: translateY(-1px);
-    filter: brightness(0.98);
-    box-shadow: 0 14px 28px rgba(0,0,0,0.30);
+    background: rgba(212,175,55,0.12);
+    border-color: rgba(212,175,55,1);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.24);
   }
 
   .dateGrid{
     display:grid;
-    grid-template-columns: repeat(auto-fit, minmax(var(--dateMinCol), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--dateMinCol), var(--dateMinCol)));
     gap: 8px;
+    align-content: start;
+    justify-content: start;
+    grid-auto-flow: row dense;
   }
+
   .dateCell{
     border: 1px solid rgba(255,255,255,0.14);
     background: rgba(0,0,0,0.20);
@@ -455,14 +457,15 @@
     align-items:center;
     justify-content: space-between;
     gap: 10px;
+    transition: background .12s ease, border-color .12s ease, filter .12s ease;
+    min-width: 0;
   }
+  .dateCell.isHidden{ display:none; }
 
-  .dateGrid{
-  align-content: start;
-  grid-auto-flow: row dense;
-}
-
-.dateCell.isHidden{ display:none; }
+  .dateCell.heat-green{ background: rgb(35, 136, 60); border-color: rgb(0, 255, 64); }
+  .dateCell.heat-yellow{ background: rgb(186, 149, 0); border-color: rgb(175, 140, 0); filter: saturate(1.02); }
+  .dateCell.heat-orange{ background: rgb(175, 91, 0); border-color: rgb(255, 149, 0); filter: saturate(1.05); }
+  .dateCell.heat-red{ background: rgba(255, 0, 0, 0); border-color: rgb(255, 0, 0); }
 
   .footerbar{
     margin-top: 16px;
@@ -471,8 +474,284 @@
     align-items:center;
     gap: 10px;
     flex-wrap: wrap;
-    color: var(--muted2);
+    color: rgba(255,255,255,0.62);
     font-size: 12px;
+  }
+
+  .modalBackdrop{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display:none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    z-index: 120;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal{
+    width: min(560px, 96vw);
+    max-height: calc(100vh - 36px);
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(3, 7, 13, 0.98);
+    box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+    overflow:hidden;
+    display:flex;
+    flex-direction: column;
+  }
+  .modalHeader{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+    flex: 0 0 auto;
+  }
+  .modalTitle{
+    font-weight: 900;
+    letter-spacing: .2px;
+  }
+  .iconBtn{
+    height: 38px;
+    width: 38px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.92);
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    transition: transform .12s ease, filter .12s ease, border-color .12s ease;
+  }
+  .iconBtn:hover{
+    transform: translateY(-1px);
+    filter: brightness(1.03);
+    border-color: rgba(255,255,255,0.22);
+  }
+
+  .modalBody{
+    padding: 14px 12px 12px;
+    overflow: auto;
+    flex: 1 1 auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .pickerModeRow{
+    display:flex;
+    gap: 8px;
+    align-items:center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .seg{
+    display:inline-flex;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(0,0,0,0.22);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 4px;
+  }
+  .segBtn{
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: rgba(255,255,255,0.85);
+    cursor:pointer;
+    font-size: 12px;
+    transition: background .12s ease, border-color .12s ease, filter .12s ease, transform .12s ease;
+    user-select:none;
+    white-space: nowrap;
+  }
+  .segBtn:hover{ filter: brightness(1.05); }
+  .segBtn.active{
+    border-color: rgba(212,175,55,0.60);
+    background: rgba(212,175,55,0.16);
+    color: rgba(255,255,255,0.92);
+  }
+
+  .modalHint{
+    color: rgba(255,255,255,0.72);
+    font-size: 12px;
+    line-height: 1.35;
+    margin-bottom: 12px;
+  }
+
+  .modalGrid{
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .modalGrid .select{ width: 100%; min-width: 0; }
+
+  .calWrap{
+    display:none;
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(0,0,0,0.18);
+    border-radius: 16px;
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+
+  .calYearRow{
+    display:grid;
+    grid-template-columns: 44px 1fr 44px;
+    align-items:center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .calYearBtn{
+    height: 38px;
+    width: 44px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.92);
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    transition: transform .12s ease, filter .12s ease, border-color .12s ease;
+    user-select:none;
+  }
+  .calYearBtn:hover{
+    transform: translateY(-1px);
+    filter: brightness(1.03);
+    border-color: rgba(255,255,255,0.22);
+  }
+  .calYearText{
+    text-align:center;
+    font-weight: 900;
+    letter-spacing: .4px;
+  }
+  .calYearSub{
+    text-align:center;
+    font-size: 11px;
+    color: rgba(255,255,255,0.65);
+    margin-top: 2px;
+  }
+
+  .monthGrid{
+    display:grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .monthBtn{
+    height: 36px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.90);
+    cursor:pointer;
+    font-size: 12px;
+    user-select:none;
+    transition: transform .12s ease, filter .12s ease, border-color .12s ease, background .12s ease;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .monthBtn:hover{
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    border-color: rgba(255,255,255,0.22);
+  }
+  .monthBtn.isSelected{
+    border-color: rgba(212,175,55,0.85);
+    background: rgba(212,175,55,0.18);
+    box-shadow: 0 0 0 4px rgba(212,175,55,0.10);
+  }
+
+  .calWeek{
+    display:grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+  }
+  .calWeek div{
+    text-align:center;
+    font-size: 11px;
+    color: rgba(255,255,255,0.65);
+    padding: 4px 0;
+  }
+  .calGrid{
+    display:grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .calDay{
+    height: 38px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.90);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 12px;
+    user-select:none;
+    transition: transform .12s ease, filter .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .calDay:hover{
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    border-color: rgba(255,255,255,0.22);
+  }
+  .calDay.isBlank{
+    opacity: 0.0;
+    pointer-events:none;
+  }
+  .calDay.isSelected{
+    border-color: rgba(212,175,55,0.85);
+    background: rgba(212,175,55,0.18);
+    box-shadow: 0 0 0 4px rgba(212,175,55,0.10);
+  }
+
+  .modalActions{
+    display:flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 12px 12px;
+    border-top: 1px solid rgba(255,255,255,0.10);
+    background: rgba(3, 7, 13, 0.98);
+    flex: 0 0 auto;
+    position: sticky;
+    bottom: 0;
+  }
+
+  .heatFab{
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    height: 52px;
+    width: 52px;
+    border-radius: 999px;
+    border: 2px solid rgba(212,175,55,0.85);
+    background: rgba(0,0,0,0.40);
+    color: rgba(255,255,255,0.92);
+    box-shadow: 0 18px 60px rgba(0,0,0,0.40);
+    cursor:pointer;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    font-size: 22px;
+    z-index: 95;
+    transition: transform .12s ease, filter .12s ease, background .12s ease, border-color .12s ease;
+  }
+  .heatFab:hover{
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+    background: rgba(212,175,55,0.10);
+    border-color: rgba(212,175,55,1);
   }
 
   @media (max-width: 720px){
@@ -507,23 +786,46 @@
     .select{ width: 100%; min-width: 0; }
     .shipWrap{ width: 100%; }
     #shipBtn{ width: 100%; }
+    #heatBtn{ width: 100%; }
 
     .card-inner{ flex-direction: column; }
     .thumb{ width:100%; height:170px; }
     .headline{ flex-direction: column; align-items:flex-start; }
+
+    .dateGrid{
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      justify-content: stretch;
+    }
+
+    .modalBackdrop{
+      align-items: flex-start;
+      padding: 14px;
+    }
+    .modal{
+      max-height: calc(100vh - 28px);
+    }
+
+    .modalGrid{ grid-template-columns: 1fr; }
+
+    .monthGrid{
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
   @media (max-width: 420px){
     .toolbar{ grid-template-columns: 1fr; }
-    .btn, .select, .field, #shipBtn{ width: 100%; }
+    .btn, .select, .field, #shipBtn, #heatBtn{ width: 100%; }
     .btn.primary{ justify-self: stretch; }
-  }
-</style>
 
+    .dateGrid{ grid-template-columns: 1fr; }
+
+    .heatFab{ right: 12px; bottom: 12px; }
+  }
+  </style>
 </head>
 
 <body>
-  <div class="appbar">
+  <div id="appbar" class="appbar">
     <div class="appbar-inner">
       <div class="topline">
         <div class="title">
@@ -532,6 +834,7 @@
             <span class="pill"><span id="statusDot" class="dot warn"></span><span id="status">Loading…</span></span>
             <span class="pill"><span class="dot"></span>Shows first 500 matches for speed</span>
             <span class="pill"><span class="dot"></span>Ship filter is multi-select</span>
+            <span class="pill"><span class="dot"></span><span id="heatLabel">Date heat: off</span></span>
           </div>
         </div>
       </div>
@@ -563,6 +866,10 @@
           </div>
         </div>
 
+        <button id="heatBtn" class="btn" disabled title="Pick a reference date to color all sailing dates">
+          🗓️ Date heat <span id="heatBtnText" style="opacity:.75;"></span>
+        </button>
+
         <select id="datesFilter" class="select" disabled>
           <option value="">All sailings</option>
           <option value="hasDates">Has dates</option>
@@ -571,6 +878,8 @@
       </div>
     </div>
   </div>
+
+  <button id="heatFab" class="heatFab" type="button" aria-label="Open date heat">🗓️</button>
 
   <div class="wrap">
     <div id="out" class="grid"></div>
@@ -581,9 +890,74 @@
     </div>
   </div>
 
+  <div id="heatModalBackdrop" class="modalBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="heatModalTitle">
+      <div class="modalHeader">
+        <div id="heatModalTitle" class="modalTitle">Choose a date</div>
+        <button id="heatModalClose" class="iconBtn" type="button" title="Close">✕</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="pickerModeRow">
+          <div class="seg" role="tablist" aria-label="Picker mode">
+            <button id="modeDropdown" class="segBtn active" type="button" role="tab" aria-selected="true">Dropdowns</button>
+            <button id="modeCalendar" class="segBtn" type="button" role="tab" aria-selected="false">Calendar</button>
+          </div>
+        </div>
+
+        <div class="modalHint">
+          Pick a reference date and press <b>Submit</b>. Colors each date by distance from the picked day:
+          green (same day), yellow (≤3 days), orange (≤7 days), red (everything else). <br>
+          <b>None of these are strict rules, colors are guidelines only, and can be strayed from depending on client flexibility and agent's sales ability.</b>
+        </div>
+
+        <div id="dropdownPicker" class="modalGrid">
+          <select id="heatMonth" class="select" aria-label="Month"></select>
+          <select id="heatDay" class="select" aria-label="Day"></select>
+          <select id="heatYear" class="select" aria-label="Year"></select>
+        </div>
+
+        <div id="calendarPicker" class="calWrap" aria-label="Calendar date picker">
+          <div class="calYearRow" aria-label="Year selector">
+            <button id="yearPrev" class="calYearBtn" type="button" title="Previous year">‹</button>
+            <div>
+              <div id="calYearText" class="calYearText">2026</div>
+              <div class="calYearSub">Year</div>
+            </div>
+            <button id="yearNext" class="calYearBtn" type="button" title="Next year">›</button>
+          </div>
+
+          <div class="monthGrid" id="monthGrid" aria-label="Month selector"></div>
+
+          <div class="calWeek" aria-hidden="true">
+            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+          </div>
+
+          <div id="calGrid" class="calGrid"></div>
+        </div>
+      </div>
+
+      <div class="modalActions">
+        <button id="heatClear" class="btn" type="button" title="Turn off date heat">Clear</button>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+          <button id="heatCancel" class="btn" type="button">Cancel</button>
+          <button id="heatSubmit" class="btn primary" type="button">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
+    /* =========
+       State + DOM refs
+       - Holds loaded JSON, active filters, and frequently used elements.
+    ========= */
     let DATA = [];
-    let SELECTED_SHIPS = new Set();
+    const SELECTED_SHIPS = new Set();
+    let HEAT_DATE = "";
+    let HEAT_PICK = { y: 0, m: 0, d: 0 };
+    let CAL_MIN_YEAR = 0;
+    let CAL_MAX_YEAR = 0;
 
     const q = document.getElementById("q");
     const out = document.getElementById("out");
@@ -600,6 +974,40 @@
     const shipClear = document.getElementById("shipClear");
     const shipCount = document.getElementById("shipCount");
 
+    const heatBtn = document.getElementById("heatBtn");
+    const heatFab = document.getElementById("heatFab");
+    const heatBtnText = document.getElementById("heatBtnText");
+    const heatLabel = document.getElementById("heatLabel");
+
+    const heatModalBackdrop = document.getElementById("heatModalBackdrop");
+    const heatModalClose = document.getElementById("heatModalClose");
+    const heatCancel = document.getElementById("heatCancel");
+    const heatSubmit = document.getElementById("heatSubmit");
+    const heatClear = document.getElementById("heatClear");
+
+    const heatMonth = document.getElementById("heatMonth");
+    const heatDay = document.getElementById("heatDay");
+    const heatYear = document.getElementById("heatYear");
+
+    const modeDropdown = document.getElementById("modeDropdown");
+    const modeCalendar = document.getElementById("modeCalendar");
+    const dropdownPicker = document.getElementById("dropdownPicker");
+    const calendarPicker = document.getElementById("calendarPicker");
+
+    const yearPrev = document.getElementById("yearPrev");
+    const yearNext = document.getElementById("yearNext");
+    const calYearText = document.getElementById("calYearText");
+    const monthGrid = document.getElementById("monthGrid");
+    const calGrid = document.getElementById("calGrid");
+
+    const appbar = document.getElementById("appbar");
+
+    const MONTHS = [
+      "January","February","March","April","May","June",
+      "July","August","September","October","November","December"
+    ];
+    const MONTH_ABBR = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
     const MAX_PREVIEW = 10;
     const AUTO_COLLAPSE_OVER = 15;
 
@@ -608,6 +1016,10 @@
       statusDot.className = "dot " + (kind === "good" ? "good" : kind === "bad" ? "bad" : "warn");
     }
 
+    /* =========
+       Small helpers
+       - Sanitizing, normalization, and field picking.
+    ========= */
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, c => ({
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
@@ -621,7 +1033,8 @@
 
     function pickFirst(obj, keys) {
       for (const k of keys) {
-        if (obj && obj[k] !== undefined && obj[k] !== null && obj[k] !== "") return obj[k];
+        const v = obj && obj[k];
+        if (v !== undefined && v !== null && v !== "") return v;
       }
       return "";
     }
@@ -637,6 +1050,23 @@
       return String(s).replace(/[^a-zA-Z0-9\-_:.]/g, "_");
     }
 
+    function toTitleCase(input){
+      const s = String(input ?? "").trim();
+      if (!s) return "";
+      return s
+        .toLowerCase()
+        .split(/(\s+|[-/])/g)
+        .map(part => {
+          if (part.trim() === "" || part === "-" || part === "/") return part;
+          return part.charAt(0).toUpperCase() + part.slice(1);
+        })
+        .join("");
+    }
+
+    /* =========
+       Ship name extraction
+       - Finds the ship name across multiple potential fields (plus journeyText fallback).
+    ========= */
     function getShipName(item){
       const direct = pickFirst(item, ["ship", "shipName", "yacht", "vessel"]);
       if (direct) return String(direct);
@@ -649,16 +1079,20 @@
       return "Unknown";
     }
 
+    /* =========
+       Filter option builders
+       - Populates Region and Ship menus based on loaded JSON.
+    ========= */
     function buildRegionOptions(items) {
       const regions = new Set();
-      items.forEach(it => {
+      for (const it of items) {
         const r = pickFirst(it, ["region"]);
         if (r) regions.add(String(r).trim());
-      });
+      }
       const sorted = Array.from(regions).sort((a,b) => a.localeCompare(b));
       regionFilter.innerHTML =
         `<option value="">All regions</option>` +
-        sorted.map(r => `<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join("");
+        sorted.map(r => `<option value="${escapeHtml(r)}">${escapeHtml(toTitleCase(r))}</option>`).join("");
     }
 
     function updateShipBtnLabel(){
@@ -668,20 +1102,19 @@
 
     function buildShipOptions(items){
       const counts = new Map();
-      items.forEach(it => {
+      for (const it of items) {
         const ship = getShipName(it) || "Unknown";
         counts.set(ship, (counts.get(ship) || 0) + 1);
-      });
+      }
 
       const ships = Array.from(counts.entries()).sort((a,b) => a[0].localeCompare(b[0]));
-
       shipList.innerHTML = ships.map(([name, count]) => {
         const checked = SELECTED_SHIPS.has(name) ? "checked" : "";
         return `
           <label class="shipItem">
             <span class="shipLeft">
               <input type="checkbox" data-ship="${escapeHtml(name)}" ${checked}>
-              <span class="shipName">${escapeHtml(name)}</span>
+              <span class="shipName">${escapeHtml(toTitleCase(name))}</span>
             </span>
             <span class="shipCountBadge">${count}</span>
           </label>
@@ -693,12 +1126,413 @@
 
     function closeShipMenu(){ shipMenu.style.display = "none"; }
 
+    /* =========
+       Date heat UI labels
+       - Keeps appbar label and button label in sync with HEAT_DATE.
+    ========= */
+    function updateHeatLabels(){
+      if (!HEAT_DATE) {
+        heatBtnText.textContent = "";
+        heatLabel.textContent = "Date heat: off";
+      } else {
+        heatBtnText.textContent = `(${HEAT_DATE})`;
+        heatLabel.textContent = `Date heat: ${HEAT_DATE}`;
+      }
+    }
+
+    /* =========
+       Date parsing + heat classification
+       - Parses various date formats to UTC midnight and classifies distance.
+    ========= */
+    function extractStartDateToken(input){
+      if (input === undefined || input === null) return "";
+      const str = (typeof input === "string")
+        ? input.trim()
+        : (typeof input === "object" ? JSON.stringify(input) : String(input)).trim();
+      if (!str) return "";
+      const parts = str.split(/\s+(?:–|—|-|to)\s+/i);
+      return (parts[0] || "").trim();
+    }
+
+    function findAnyYearInString(s){
+      const m = String(s || "").match(/\b(19\d{2}|20\d{2})\b/);
+      return m ? Number(m[1]) : 0;
+    }
+
+    function parseStartDateToUtcMidnight(fullText, fallbackYear){
+      if (fullText === undefined || fullText === null) return null;
+
+      const raw = (typeof fullText === "string")
+        ? fullText.trim()
+        : (typeof fullText === "object" ? JSON.stringify(fullText) : String(fullText)).trim();
+
+      if (!raw) return null;
+
+      const start = extractStartDateToken(raw);
+      if (!start) return null;
+
+      const yearFromFull = findAnyYearInString(raw);
+      const useYear = yearFromFull || Number(fallbackYear) || 0;
+
+      let m = start.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+      if (m) return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+
+      m = start.match(/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/);
+      if (m) return new Date(Date.UTC(Number(m[3]), Number(m[1]) - 1, Number(m[2])));
+
+      m = start.match(/\b(\d{1,2})[\/\-](\d{1,2})\b/);
+      if (m && useYear) return new Date(Date.UTC(useYear, Number(m[1]) - 1, Number(m[2])));
+
+      const monthNames = {
+        jan:0, january:0, feb:1, february:1, mar:2, march:2, apr:3, april:3, may:4,
+        jun:5, june:5, jul:6, july:6, aug:7, august:7,
+        sep:8, sept:8, september:8, oct:9, october:9, nov:10, november:10, dec:11, december:11
+      };
+
+      const reWithYear = /\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t|tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})(?:st|nd|rd|th)?(?:,)?\s+(\d{4})\b/i;
+      m = start.match(reWithYear);
+      if (m) return new Date(Date.UTC(Number(m[3]), monthNames[String(m[1]).toLowerCase()], Number(m[2])));
+
+      const reNoYear = /\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t|tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})(?:st|nd|rd|th)?\b/i;
+      m = start.match(reNoYear);
+      if (m && useYear) return new Date(Date.UTC(useYear, monthNames[String(m[1]).toLowerCase()], Number(m[2])));
+
+      const t = Date.parse(start);
+      if (!Number.isFinite(t)) return null;
+      const dt = new Date(t);
+      return new Date(Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()));
+    }
+
+    function daysBetweenUtc(a, b){
+      return Math.round(Math.abs(a.getTime() - b.getTime()) / 86400000);
+    }
+
+    function classifyHeat(dateText){
+      if (!HEAT_DATE) return "";
+      const ref = parseStartDateToUtcMidnight(HEAT_DATE, 0);
+      if (!ref) return "";
+      const refYear = ref.getUTCFullYear();
+
+      const dt = parseStartDateToUtcMidnight(dateText, refYear);
+      if (!dt) return "";
+
+      const diff = daysBetweenUtc(ref, dt);
+      if (diff === 0) return "heat-green";
+      if (diff <= 3) return "heat-yellow";
+      if (diff <= 7) return "heat-orange";
+      return "heat-red";
+    }
+
+    function applyHeatToDom(){
+      out.querySelectorAll(".dateCell").forEach(cell => {
+        cell.classList.remove("heat-green","heat-yellow","heat-orange","heat-red");
+      });
+      if (!HEAT_DATE) return;
+
+      out.querySelectorAll(".dateCell[data-date]").forEach(cell => {
+        const raw = cell.getAttribute("data-date") || "";
+        const klass = classifyHeat(raw);
+        if (klass) cell.classList.add(klass);
+      });
+    }
+
+    /* =========
+       Calendar math helpers
+       - Leap year logic + clamping day to the selected month/year.
+    ========= */
+    function pad2(n){ return String(n).padStart(2, "0"); }
+
+    function isLeapYear(year){
+      return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    }
+    function daysInMonth(year, month1to12){
+      if (month1to12 === 2) return isLeapYear(year) ? 29 : 28;
+      if ([4,6,9,11].includes(month1to12)) return 30;
+      return 31;
+    }
+
+    function clampDayToMonth(){
+      const maxD = daysInMonth(HEAT_PICK.y, HEAT_PICK.m);
+      if (HEAT_PICK.d > maxD) HEAT_PICK.d = maxD;
+      if (HEAT_PICK.d < 1) HEAT_PICK.d = 1;
+    }
+
+    /* =========
+       Dropdown date picker
+       - Builds dropdown lists and syncs selections into HEAT_PICK.
+    ========= */
+    function rebuildDayOptions(){
+      const y = Number(heatYear.value);
+      const m = Number(heatMonth.value);
+      const maxD = daysInMonth(y, m);
+      const prev = Number(heatDay.value) || 1;
+
+      heatDay.innerHTML = "";
+      for (let d = 1; d <= maxD; d++){
+        const opt = document.createElement("option");
+        opt.value = String(d);
+        opt.textContent = String(d);
+        heatDay.appendChild(opt);
+      }
+      heatDay.value = String(Math.min(prev, maxD));
+    }
+
+    function syncHeatPickFromDropdowns(){
+      HEAT_PICK = {
+        y: Number(heatYear.value) || HEAT_PICK.y,
+        m: Number(heatMonth.value) || HEAT_PICK.m,
+        d: Number(heatDay.value) || HEAT_PICK.d
+      };
+      clampDayToMonth();
+      heatDay.value = String(HEAT_PICK.d);
+    }
+
+    function buildHeatDropdowns(year, month, day){
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const endYear = currentYear + 15;
+
+      heatYear.innerHTML = "";
+      for (let y = currentYear; y <= endYear; y++){
+        const opt = document.createElement("option");
+        opt.value = String(y);
+        opt.textContent = String(y);
+        heatYear.appendChild(opt);
+      }
+
+      heatMonth.innerHTML = "";
+      MONTHS.forEach((name, idx) => {
+        const mm = idx + 1;
+        const opt = document.createElement("option");
+        opt.value = String(mm);
+        opt.textContent = name;
+        heatMonth.appendChild(opt);
+      });
+
+      const safeYear = Math.min(Math.max(year, currentYear), endYear);
+      heatYear.value = String(safeYear);
+      heatMonth.value = String(month);
+
+      rebuildDayOptions();
+      heatDay.value = String(Math.min(day, Number(heatDay.options[heatDay.options.length - 1]?.value || day)));
+
+      syncHeatPickFromDropdowns();
+    }
+
+    function onHeatDropdownChange(rebuildDays){
+      if (rebuildDays) rebuildDayOptions();
+      syncHeatPickFromDropdowns();
+      if (calendarPicker.style.display === "block") renderCalendarUI();
+    }
+
+    heatYear.addEventListener("change", () => onHeatDropdownChange(true));
+    heatMonth.addEventListener("change", () => onHeatDropdownChange(true));
+    heatDay.addEventListener("change", () => onHeatDropdownChange(false));
+
+    /* =========
+       Calendar date picker
+       - Year navigation + month selection + day grid.
+    ========= */
+    function initCalendarUI(){
+      monthGrid.innerHTML = MONTH_ABBR.map((m, idx) => {
+        const mm = idx + 1;
+        return `<button type="button" class="monthBtn" data-month="${mm}">${m}</button>`;
+      }).join("");
+
+      monthGrid.addEventListener("click", (e) => {
+        const btn = e.target.closest(".monthBtn");
+        if (!btn) return;
+        const mm = Number(btn.getAttribute("data-month"));
+        if (!mm) return;
+
+        HEAT_PICK.m = mm;
+        clampDayToMonth();
+
+        heatMonth.value = String(mm);
+        rebuildDayOptions();
+        heatDay.value = String(HEAT_PICK.d);
+
+        renderCalendarUI();
+      });
+    }
+
+    function setCalendarYear(y){
+      const ny = Math.min(Math.max(y, CAL_MIN_YEAR), CAL_MAX_YEAR);
+      HEAT_PICK.y = ny;
+      clampDayToMonth();
+
+      heatYear.value = String(ny);
+      rebuildDayOptions();
+      heatDay.value = String(HEAT_PICK.d);
+
+      renderCalendarUI();
+    }
+
+    yearPrev.addEventListener("click", () => setCalendarYear(HEAT_PICK.y - 1));
+    yearNext.addEventListener("click", () => setCalendarYear(HEAT_PICK.y + 1));
+
+    function highlightCalendarSelections(){
+      calYearText.textContent = String(HEAT_PICK.y);
+
+      monthGrid.querySelectorAll(".monthBtn").forEach(b => {
+        const mm = Number(b.getAttribute("data-month"));
+        b.classList.toggle("isSelected", mm === HEAT_PICK.m);
+      });
+    }
+
+    function renderCalendarDays(){
+      const y = HEAT_PICK.y;
+      const m = HEAT_PICK.m;
+      if (!y || !m) return;
+
+      clampDayToMonth();
+
+      const first = new Date(Date.UTC(y, m - 1, 1));
+      const startDow = first.getUTCDay();
+      const maxD = daysInMonth(y, m);
+
+      calGrid.innerHTML = "";
+
+      for (let i = 0; i < startDow; i++){
+        const b = document.createElement("div");
+        b.className = "calDay isBlank";
+        b.textContent = "";
+        calGrid.appendChild(b);
+      }
+
+      for (let d = 1; d <= maxD; d++){
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "calDay";
+        btn.textContent = String(d);
+
+        if (d === HEAT_PICK.d) btn.classList.add("isSelected");
+
+        btn.addEventListener("click", () => {
+          HEAT_PICK.d = d;
+          heatDay.value = String(d);
+          renderCalendarUI();
+        });
+
+        calGrid.appendChild(btn);
+      }
+    }
+
+    function renderCalendarUI(){
+      highlightCalendarSelections();
+      renderCalendarDays();
+    }
+
+    /* =========
+       Picker mode switching
+       - Toggles between dropdowns and calendar UI.
+    ========= */
+    function setPickerMode(mode){
+      const isCal = mode === "calendar";
+      dropdownPicker.style.display = isCal ? "none" : "grid";
+      calendarPicker.style.display = isCal ? "block" : "none";
+
+      modeDropdown.classList.toggle("active", !isCal);
+      modeCalendar.classList.toggle("active", isCal);
+
+      modeDropdown.setAttribute("aria-selected", String(!isCal));
+      modeCalendar.setAttribute("aria-selected", String(isCal));
+
+      if (isCal) renderCalendarUI();
+    }
+    modeDropdown.addEventListener("click", () => setPickerMode("dropdowns"));
+    modeCalendar.addEventListener("click", () => setPickerMode("calendar"));
+
+    /* =========
+       Modal open/close + submit/clear
+       - Opens with current selection and applies HEAT_DATE on submit.
+    ========= */
+    function openHeatModal(){
+      closeShipMenu();
+
+      let y, m, d;
+      if (HEAT_DATE) {
+        const base = parseStartDateToUtcMidnight(HEAT_DATE, 0);
+        const now = new Date();
+        y = base ? base.getUTCFullYear() : now.getFullYear();
+        m = base ? (base.getUTCMonth() + 1) : (now.getMonth() + 1);
+        d = base ? base.getUTCDate() : now.getDate();
+        HEAT_PICK = { y, m, d };
+      } else if (HEAT_PICK.y && HEAT_PICK.m && HEAT_PICK.d) {
+        ({ y, m, d } = HEAT_PICK);
+      } else {
+        const now = new Date();
+        y = now.getFullYear();
+        m = now.getMonth() + 1;
+        d = now.getDate();
+        HEAT_PICK = { y, m, d };
+      }
+
+      const now = new Date();
+      CAL_MIN_YEAR = now.getFullYear();
+      CAL_MAX_YEAR = now.getFullYear() + 15;
+
+      buildHeatDropdowns(y, m, d);
+
+      if (!monthGrid.hasChildNodes()) initCalendarUI();
+      renderCalendarUI();
+
+      setPickerMode("dropdowns");
+
+      heatModalBackdrop.style.display = "flex";
+      heatModalBackdrop.setAttribute("aria-hidden", "false");
+    }
+
+    function closeHeatModal(){
+      heatModalBackdrop.style.display = "none";
+      heatModalBackdrop.setAttribute("aria-hidden", "true");
+    }
+
+    function submitHeatDate(){
+      clampDayToMonth();
+      const y = Number(HEAT_PICK.y);
+      const m = Number(HEAT_PICK.m);
+      const d = Number(HEAT_PICK.d);
+      if (!y || !m || !d) return;
+
+      HEAT_DATE = `${y}-${pad2(m)}-${pad2(d)}`;
+      updateHeatLabels();
+      applyHeatToDom();
+      closeHeatModal();
+    }
+
+    function clearHeatDate(){
+      HEAT_DATE = "";
+      updateHeatLabels();
+      applyHeatToDom();
+      closeHeatModal();
+    }
+
+    heatBtn.addEventListener("click", (e) => { e.stopPropagation(); openHeatModal(); });
+    heatFab.addEventListener("click", (e) => { e.stopPropagation(); openHeatModal(); });
+
+    heatModalBackdrop.addEventListener("click", (e) => {
+      if (e.target === heatModalBackdrop) closeHeatModal();
+    });
+
+    heatModalClose.addEventListener("click", closeHeatModal);
+    heatCancel.addEventListener("click", closeHeatModal);
+    heatSubmit.addEventListener("click", submitHeatDate);
+    heatClear.addEventListener("click", clearHeatDate);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && heatModalBackdrop.style.display === "flex") closeHeatModal();
+    });
+
+    /* =========
+       Ship menu interactions
+       - Toggle open/close, checkbox selection, clear selection.
+    ========= */
     shipBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       shipMenu.style.display = (shipMenu.style.display === "none" || shipMenu.style.display === "") ? "block" : "none";
     });
-
-    document.addEventListener("click", () => closeShipMenu());
+    document.addEventListener("click", closeShipMenu);
     shipMenu.addEventListener("click", (e) => e.stopPropagation());
 
     shipList.addEventListener("change", (e) => {
@@ -721,55 +1555,64 @@
       applyFilters();
     });
 
+    /* =========
+       Dates panel HTML
+       - Renders date tiles, optionally collapses extras, and supports heat coloring.
+    ========= */
     function buildDatesHtml(dateRanges, toggleKey) {
-        const total = dateRanges.length;
-        if (!total) return `<div class="datePanel"><div class="dateSummary">No dates</div></div>`;
+      const total = dateRanges.length;
+      if (!total) return `<div class="datePanel"><div class="dateSummary">No dates</div></div>`;
 
-        const hasExtra = total > MAX_PREVIEW;
-        const autoCollapsed = total > AUTO_COLLAPSE_OVER;
+      const hasExtra = total > MAX_PREVIEW;
+      const autoCollapsed = total > AUTO_COLLAPSE_OVER;
+      const panelId = cssSafe(toggleKey);
 
-        const panelId = cssSafe(toggleKey);
+      const btnHtml = hasExtra
+        ? `<button class="dateBtn" type="button"
+              data-panel="${panelId}"
+              data-total="${total}"
+              data-collapsed="${autoCollapsed ? "1" : "0"}">
+              ${autoCollapsed ? `Show all (${total})` : `Hide extra dates`}
+          </button>`
+        : "";
 
-        const btnHtml = hasExtra
-            ? `<button class="dateBtn" type="button"
-                data-panel="${panelId}"
-                data-total="${total}"
-                data-collapsed="${autoCollapsed ? "1" : "0"}">
-                ${autoCollapsed ? `Show all (${total})` : `Hide extra dates`}
-            </button>`
-            : "";
+      const cells = dateRanges.map((d, i) => {
+        const isExtra = i >= MAX_PREVIEW;
+        const hidden = (isExtra && autoCollapsed) ? " isHidden" : "";
+        const heatClass = HEAT_DATE ? classifyHeat(d) : "";
+        return `<div class="dateCell${hidden}${heatClass ? ` ${heatClass}` : ""}" data-extra="${isExtra ? "1" : "0"}" data-date="${escapeHtml(d)}">
+                  <span>${escapeHtml(d)}</span>
+                  <small>#${i+1}</small>
+                </div>`;
+      }).join("");
 
-        const cells = dateRanges.map((d, i) => {
-            const isExtra = i >= MAX_PREVIEW;
-            const hidden = (isExtra && autoCollapsed) ? " isHidden" : "";
-            return `<div class="dateCell${hidden}" data-extra="${isExtra ? "1" : "0"}">
-                    <span>${escapeHtml(d)}</span>
-                    <small>#${i+1}</small>
-                    </div>`;
-        }).join("");
+      return `
+        <div class="datePanel" data-panel="${panelId}">
+          <div class="dateTopRow">
+            <div class="dateSummary">Showing ${Math.min(MAX_PREVIEW, total)} of ${total}</div>
+            ${btnHtml}
+          </div>
+          <div class="dateGrid">
+            ${cells}
+          </div>
+        </div>
+      `;
+    }
 
-        return `
-            <div class="datePanel" data-panel="${panelId}">
-            <div class="dateTopRow">
-                <div class="dateSummary">Showing ${Math.min(MAX_PREVIEW, total)} of ${total}</div>
-                ${btnHtml}
-            </div>
-            <div class="dateGrid">
-                ${cells}
-            </div>
-            </div>
-        `;
-        }
-
+    /* =========
+       Rendering
+       - Renders the first 500 matching cards into the DOM.
+    ========= */
     function render(list) {
       out.innerHTML = "";
 
       const capped = list.slice(0, 500);
       const frag = document.createDocumentFragment();
 
-      capped.forEach((item) => {
+      for (const item of capped) {
         const title = pickFirst(item, ["title", "name", "itineraryName", "cruiseName"]);
-        const region = pickFirst(item, ["region"]);
+        const regionRaw = pickFirst(item, ["region"]);
+        const region = regionRaw ? toTitleCase(regionRaw) : "";
         const duration = normalizeDuration(item);
         const journey = pickFirst(item, ["journeyText"]);
         const url = pickFirst(item, ["viewDetailsUrl", "viewDetailsHref", "url", "link"]);
@@ -779,11 +1622,11 @@
         const safeUrl = (typeof url === "string" && url.startsWith("http")) ? url : "";
         const safeImg = (typeof img === "string" && img.startsWith("http")) ? img : "";
 
-        const toggleKey = safeUrl || (String(title||"") + "|" + String(journey||"") + "|" + String(region||"") + "|" + String(duration||""));
+        const toggleKey = safeUrl || (String(title||"") + "|" + String(journey||"") + "|" + String(regionRaw||"") + "|" + String(duration||""));
+        const shipName = toTitleCase(getShipName(item));
 
         const card = document.createElement("div");
         card.className = "card";
-
         card.innerHTML = `
           <div class="card-inner">
             <div class="thumb">
@@ -797,7 +1640,7 @@
                   <div class="meta">
                     ${region ? `<span class="tag">🌍 ${escapeHtml(region)}</span>` : ``}
                     ${duration ? `<span class="tag">⏱️ ${escapeHtml(duration)}</span>` : ``}
-                    <span class="tag">🚢 ${escapeHtml(getShipName(item))}</span>
+                    <span class="tag">🚢 ${escapeHtml(shipName)}</span>
                     ${dateRanges.length ? `<span class="tag">📅 ${dateRanges.length} date${dateRanges.length===1?"":"s"}</span>` : `<span class="tag">📅 No dates</span>`}
                   </div>
                 </div>
@@ -814,40 +1657,50 @@
             </div>
           </div>
         `;
-
         frag.appendChild(card);
-      });
+      }
 
       out.appendChild(frag);
 
       const shown = Math.min(list.length, 500);
       countNote.textContent = `Matches: ${list.length} (rendered: ${shown})`;
 
-      out.querySelectorAll(".dateBtn[data-panel]").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const panelId = btn.getAttribute("data-panel");
-            const total = btn.getAttribute("data-total") || "";
-            if (!panelId) return;
-
-            const panel = out.querySelector(`.datePanel[data-panel="${panelId}"]`);
-            if (!panel) return;
-
-            const extraCells = panel.querySelectorAll('.dateCell[data-extra="1"]');
-            const collapsed = btn.getAttribute("data-collapsed") === "1";
-
-            if (collapsed) {
-            extraCells.forEach(c => c.classList.remove("isHidden"));
-            btn.textContent = "Hide extra dates";
-            btn.setAttribute("data-collapsed", "0");
-            } else {
-            extraCells.forEach(c => c.classList.add("isHidden"));
-            btn.textContent = `Show all (${total})`;
-            btn.setAttribute("data-collapsed", "1");
-            }
-        });
-        });
+      applyHeatToDom();
     }
 
+    /* =========
+       Date panel expand/collapse (delegated)
+       - Handles "Show all" / "Hide extra dates" without per-button listeners.
+    ========= */
+    out.addEventListener("click", (e) => {
+      const btn = e.target.closest(".dateBtn[data-panel]");
+      if (!btn) return;
+
+      const panelId = btn.getAttribute("data-panel");
+      const total = btn.getAttribute("data-total") || "";
+      if (!panelId) return;
+
+      const panel = out.querySelector(`.datePanel[data-panel="${panelId}"]`);
+      if (!panel) return;
+
+      const extraCells = panel.querySelectorAll('.dateCell[data-extra="1"]');
+      const collapsed = btn.getAttribute("data-collapsed") === "1";
+
+      if (collapsed) {
+        extraCells.forEach(c => c.classList.remove("isHidden"));
+        btn.textContent = "Hide extra dates";
+        btn.setAttribute("data-collapsed", "0");
+      } else {
+        extraCells.forEach(c => c.classList.add("isHidden"));
+        btn.textContent = `Show all (${total})`;
+        btn.setAttribute("data-collapsed", "1");
+      }
+    });
+
+    /* =========
+       Filtering
+       - Applies search text, region, has/no dates, and multi-ship selection.
+    ========= */
     function applyFilters() {
       const needle = q.value.trim().toLowerCase();
       const region = regionFilter.value;
@@ -876,12 +1729,26 @@
     regionFilter.addEventListener("change", applyFilters);
     datesFilter.addEventListener("change", applyFilters);
 
+    /* =========
+       Floating heat button visibility
+       - Shows the FAB when the sticky appbar is scrolled out of view.
+    ========= */
+    const obs = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      heatFab.style.display = entry.isIntersecting ? "none" : "flex";
+    }, { threshold: 0.1 });
+    obs.observe(appbar);
+
+    /* =========
+       Data loading
+       - Fetches cruiseDataOld.json from the same folder, then initializes UI.
+    ========= */
     async function loadData() {
       try {
         setStatus("warn", "Loading…");
 
-        const res = await fetch("./cruiseDataNew.json", { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status} (couldn't find cruiseDataNew.json)`);
+        const res = await fetch("./cruiseDataOld.json", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status} (couldn't find cruiseDataOld.json)`);
 
         const raw = await res.json();
 
@@ -899,6 +1766,7 @@
         regionFilter.disabled = false;
         datesFilter.disabled = false;
         shipBtn.disabled = false;
+        heatBtn.disabled = false;
 
         buildRegionOptions(DATA);
         buildShipOptions(DATA);
@@ -910,6 +1778,7 @@
         updateShipBtnLabel();
         closeShipMenu();
 
+        updateHeatLabels();
         applyFilters();
       } catch (e) {
         setStatus("bad", `Failed to load JSON: ${e.message}`);
