@@ -948,10 +948,6 @@
   </div>
 
   <script>
-    /* =========
-       State + DOM refs
-       - Holds loaded JSON, active filters, and frequently used elements.
-    ========= */
     let DATA = [];
     const SELECTED_SHIPS = new Set();
     let HEAT_DATE = "";
@@ -1016,10 +1012,6 @@
       statusDot.className = "dot " + (kind === "good" ? "good" : kind === "bad" ? "bad" : "warn");
     }
 
-    /* =========
-       Small helpers
-       - Sanitizing, normalization, and field picking.
-    ========= */
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, c => ({
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
@@ -1063,10 +1055,6 @@
         .join("");
     }
 
-    /* =========
-       Ship name extraction
-       - Finds the ship name across multiple potential fields (plus journeyText fallback).
-    ========= */
     function getShipName(item){
       const direct = pickFirst(item, ["ship", "shipName", "yacht", "vessel"]);
       if (direct) return String(direct);
@@ -1079,10 +1067,6 @@
       return "Unknown";
     }
 
-    /* =========
-       Filter option builders
-       - Populates Region and Ship menus based on loaded JSON.
-    ========= */
     function buildRegionOptions(items) {
       const regions = new Set();
       for (const it of items) {
@@ -1126,10 +1110,6 @@
 
     function closeShipMenu(){ shipMenu.style.display = "none"; }
 
-    /* =========
-       Date heat UI labels
-       - Keeps appbar label and button label in sync with HEAT_DATE.
-    ========= */
     function updateHeatLabels(){
       if (!HEAT_DATE) {
         heatBtnText.textContent = "";
@@ -1140,10 +1120,6 @@
       }
     }
 
-    /* =========
-       Date parsing + heat classification
-       - Parses various date formats to UTC midnight and classifies distance.
-    ========= */
     function extractStartDateToken(input){
       if (input === undefined || input === null) return "";
       const str = (typeof input === "string")
@@ -1236,10 +1212,6 @@
       });
     }
 
-    /* =========
-       Calendar math helpers
-       - Leap year logic + clamping day to the selected month/year.
-    ========= */
     function pad2(n){ return String(n).padStart(2, "0"); }
 
     function isLeapYear(year){
@@ -1257,10 +1229,6 @@
       if (HEAT_PICK.d < 1) HEAT_PICK.d = 1;
     }
 
-    /* =========
-       Dropdown date picker
-       - Builds dropdown lists and syncs selections into HEAT_PICK.
-    ========= */
     function rebuildDayOptions(){
       const y = Number(heatYear.value);
       const m = Number(heatMonth.value);
@@ -1329,10 +1297,6 @@
     heatMonth.addEventListener("change", () => onHeatDropdownChange(true));
     heatDay.addEventListener("change", () => onHeatDropdownChange(false));
 
-    /* =========
-       Calendar date picker
-       - Year navigation + month selection + day grid.
-    ========= */
     function initCalendarUI(){
       monthGrid.innerHTML = MONTH_ABBR.map((m, idx) => {
         const mm = idx + 1;
@@ -1423,10 +1387,6 @@
       renderCalendarDays();
     }
 
-    /* =========
-       Picker mode switching
-       - Toggles between dropdowns and calendar UI.
-    ========= */
     function setPickerMode(mode){
       const isCal = mode === "calendar";
       dropdownPicker.style.display = isCal ? "none" : "grid";
@@ -1443,10 +1403,6 @@
     modeDropdown.addEventListener("click", () => setPickerMode("dropdowns"));
     modeCalendar.addEventListener("click", () => setPickerMode("calendar"));
 
-    /* =========
-       Modal open/close + submit/clear
-       - Opens with current selection and applies HEAT_DATE on submit.
-    ========= */
     function openHeatModal(){
       closeShipMenu();
 
@@ -1524,10 +1480,6 @@
       if (e.key === "Escape" && heatModalBackdrop.style.display === "flex") closeHeatModal();
     });
 
-    /* =========
-       Ship menu interactions
-       - Toggle open/close, checkbox selection, clear selection.
-    ========= */
     shipBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       shipMenu.style.display = (shipMenu.style.display === "none" || shipMenu.style.display === "") ? "block" : "none";
@@ -1555,10 +1507,6 @@
       applyFilters();
     });
 
-    /* =========
-       Dates panel HTML
-       - Renders date tiles, optionally collapses extras, and supports heat coloring.
-    ========= */
     function buildDatesHtml(dateRanges, toggleKey) {
       const total = dateRanges.length;
       if (!total) return `<div class="datePanel"><div class="dateSummary">No dates</div></div>`;
@@ -1599,10 +1547,6 @@
       `;
     }
 
-    /* =========
-       Rendering
-       - Renders the first 500 matching cards into the DOM.
-    ========= */
     function render(list) {
       out.innerHTML = "";
 
@@ -1697,10 +1641,6 @@
       }
     });
 
-    /* =========
-       Filtering
-       - Applies search text, region, has/no dates, and multi-ship selection.
-    ========= */
     function applyFilters() {
       const needle = q.value.trim().toLowerCase();
       const region = regionFilter.value;
@@ -1729,20 +1669,12 @@
     regionFilter.addEventListener("change", applyFilters);
     datesFilter.addEventListener("change", applyFilters);
 
-    /* =========
-       Floating heat button visibility
-       - Shows the FAB when the sticky appbar is scrolled out of view.
-    ========= */
     const obs = new IntersectionObserver((entries) => {
       const entry = entries[0];
       heatFab.style.display = entry.isIntersecting ? "none" : "flex";
     }, { threshold: 0.1 });
     obs.observe(appbar);
 
-    /* =========
-       Data loading
-       - Fetches cruiseDataOld.json from the same folder, then initializes UI.
-    ========= */
     async function loadData() {
       try {
         setStatus("warn", "Loading…");
@@ -1791,4 +1723,5 @@
   </script>
 </body>
 </html>
+
 
