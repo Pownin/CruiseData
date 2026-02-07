@@ -822,9 +822,6 @@
     .heatFab{ right: 12px; bottom: 12px; }
   }
 
-  /* =========================
-     SIMPLE PRIVATE GATE (CLIENT-SIDE)
-  ========================== */
   #gateOverlay{
     position: fixed;
     inset: 0;
@@ -919,9 +916,6 @@
 </head>
 
 <body>
-  <!-- =========================
-       PRIVATE GATE (CLIENT-SIDE)
-  ========================== -->
   <div id="gateOverlay" aria-hidden="false">
     <div id="gateCard" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
       <h1 id="gateTitle"><span class="mark"></span> Private access</h1>
@@ -936,7 +930,6 @@
       <div id="gateMini">This is a lightweight privacy screen. It keeps casual viewers out.</div>
     </div>
   </div>
-  <!-- ========================= END GATE ========================= -->
 
   <div id="appbar" class="appbar">
     <div class="appbar-inner">
@@ -1067,14 +1060,9 @@
     let HEAT_PICK = { y: 0, m: 0, d: 0 };
     let CAL_MIN_YEAR = 0;
     let CAL_MAX_YEAR = 0;
-
-    /* =========================
-       PRIVATE GATE (CLIENT-SIDE)
-       - Blocks loadData() until unlocked
-       NOTE: This is a "privacy screen", not real security.
-    ========================== */
-    const ACCESS_CODE = "123456";    // <-- CHANGE THIS
-    const REMEMBER_HOURS = 8;        // remember unlock on this device (set 0 to disable)
+    
+    const ACCESS_CODE = "022026";
+    const REMEMBER_HOURS = 8; 
 
     const gateOverlay = document.getElementById("gateOverlay");
     const gateCode = document.getElementById("gateCode");
@@ -1141,7 +1129,6 @@
     }
 
     function gateInit(){
-      // Keep input numeric
       gateCode.addEventListener("input", () => {
         gateCode.value = gateNormalizeDigits(gateCode.value);
       });
@@ -1824,10 +1811,7 @@
 
       applyHeatToDom();
     }
-
-    /* =========
-       Date panel expand/collapse (delegated)
-    ========= */
+    
     out.addEventListener("click", (e) => {
       const btn = e.target.closest(".dateBtn[data-panel]");
       if (!btn) return;
@@ -1930,9 +1914,9 @@
       }
     }
 
-    // IMPORTANT: gateInit loads data only after unlock
     window.addEventListener("DOMContentLoaded", gateInit);
     reloadBtn.addEventListener("click", loadData);
   </script>
 </body>
 </html>
+
