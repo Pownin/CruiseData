@@ -926,8 +926,6 @@
         <button id="gateBtn" type="button">Unlock</button>
       </div>
 
-      <div id="gateMsg"></div>
-      <div id="gateMini">Tip: the code updates daily based on America/Chicago time.</div>
     </div>
   </div>
 
@@ -1119,7 +1117,6 @@
     }
 
     function gateNormalizeDigits(v){
-      // 8-digit MMDDYYYY
       return String(v || "").replace(/\D/g, "").slice(0, 8);
     }
 
@@ -1128,7 +1125,7 @@
       gateCode.value = v;
 
       if (v.length !== 8){
-        gateShow(false, "Need 8 digits (MMDDYYYY).");
+        gateShow(false, "Need 8 digits (••••••).");
         gateCode.focus();
         gateCode.select();
         return false;
@@ -1937,3 +1934,4 @@
   </script>
 </body>
 </html>
+
