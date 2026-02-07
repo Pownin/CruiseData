@@ -879,7 +879,7 @@
     color: #fff;
     padding: 0 12px;
     font-size: 16px;
-    letter-spacing: 0.35em;
+    letter-spacing: 0.30em;
     outline: none;
   }
   #gateCode::placeholder{ color: rgba(255,255,255,0.45); letter-spacing: .15em; }
@@ -919,13 +919,15 @@
   <div id="gateOverlay" aria-hidden="false">
     <div id="gateCard" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
       <h1 id="gateTitle"><span class="mark"></span> Private access</h1>
-      <p>Enter the 6-digit code to view this dashboard.</p>
+      <p>Enter today’s code (MMDDYYYY) to view this dashboard.</p>
 
       <div id="gateRow">
-        <input id="gateCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••" />
+        <input id="gateCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="MMDDYYYY" />
         <button id="gateBtn" type="button">Unlock</button>
       </div>
 
+      <div id="gateMsg"></div>
+      <div id="gateMini">Tip: the code updates daily based on America/Chicago time.</div>
     </div>
   </div>
 
@@ -1058,9 +1060,25 @@
     let HEAT_PICK = { y: 0, m: 0, d: 0 };
     let CAL_MIN_YEAR = 0;
     let CAL_MAX_YEAR = 0;
-    
-    const ACCESS_CODE = "022026";
-    const REMEMBER_HOURS = 8; 
+
+    const REMEMBER_HOURS = 0;
+
+    function chicagoDateParts(){
+      const fmt = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Chicago",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+      const parts = fmt.formatToParts(new Date());
+      const get = (type) => parts.find(p => p.type === type)?.value || "";
+      return { mm: get("month"), dd: get("day"), yyyy: get("year") };
+    }
+
+    function getDailyCode(){
+      const { mm, dd, yyyy } = chicagoDateParts();
+      return `${mm}${dd}${yyyy}`; // e.g. "02062026"
+    }
 
     const gateOverlay = document.getElementById("gateOverlay");
     const gateCode = document.getElementById("gateCode");
@@ -1090,6 +1108,7 @@
     }
 
     function gateShow(ok, text){
+      if (!gateMsg) return;
       gateMsg.textContent = text || "";
       gateMsg.className = ok ? "gateOk" : "gateErr";
     }
@@ -1100,21 +1119,24 @@
     }
 
     function gateNormalizeDigits(v){
-      return String(v || "").replace(/\D/g, "").slice(0, 6);
+      // 8-digit MMDDYYYY
+      return String(v || "").replace(/\D/g, "").slice(0, 8);
     }
 
     async function gateUnlock(){
       const v = gateNormalizeDigits(gateCode.value);
       gateCode.value = v;
 
-      if (v.length !== 6){
-        gateShow(false, "Need exactly 6 digits.");
+      if (v.length !== 8){
+        gateShow(false, "Need 8 digits (MMDDYYYY).");
         gateCode.focus();
         gateCode.select();
         return false;
       }
-      if (v !== ACCESS_CODE){
-        gateShow(false, "Wrong code.");
+
+      const expected = getDailyCode();
+      if (v !== expected){
+        gateShow(false, "Wrong code for today.");
         gateCode.focus();
         gateCode.select();
         return false;
@@ -1145,10 +1167,8 @@
 
       if (gateIsUnlocked()){
         gateHide();
-        // Already unlocked -> load immediately
         loadData();
       } else {
-        // Locked -> focus input, do NOT load data yet
         setTimeout(() => gateCode.focus(), 50);
       }
     }
@@ -1809,7 +1829,7 @@
 
       applyHeatToDom();
     }
-    
+
     out.addEventListener("click", (e) => {
       const btn = e.target.closest(".dateBtn[data-panel]");
       if (!btn) return;
@@ -1917,5 +1937,3 @@
   </script>
 </body>
 </html>
-
-
