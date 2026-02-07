@@ -821,10 +821,123 @@
 
     .heatFab{ right: 12px; bottom: 12px; }
   }
+
+  /* =========================
+     SIMPLE PRIVATE GATE (CLIENT-SIDE)
+  ========================== */
+  #gateOverlay{
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.82);
+    backdrop-filter: blur(10px);
+    z-index: 999999;
+    color: #fff;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  }
+  #gateCard{
+    width: min(540px, calc(100vw - 32px));
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+  }
+  #gateCard h1{
+    margin: 0 0 6px 0;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: .2px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  #gateCard h1 .mark{
+    width: 10px; height:10px; border-radius: 999px;
+    background: var(--gold);
+    box-shadow: 0 0 0 4px rgba(212,175,55,0.18);
+    display:inline-block;
+  }
+  #gateCard p{
+    margin: 0 0 14px 0;
+    opacity: 0.85;
+    line-height: 1.35;
+    color: rgba(255,255,255,0.80);
+    font-size: 13px;
+  }
+  #gateRow{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+  }
+  #gateCode{
+    flex: 1;
+    height: 44px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(0,0,0,0.35);
+    color: #fff;
+    padding: 0 12px;
+    font-size: 16px;
+    letter-spacing: 0.35em;
+    outline: none;
+  }
+  #gateCode::placeholder{ color: rgba(255,255,255,0.45); letter-spacing: .15em; }
+  #gateBtn{
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 14px;
+    border: 2px solid rgba(212,175,55,0.95);
+    background: rgba(0,0,0,0.18);
+    color: rgba(255,255,255,0.92);
+    cursor: pointer;
+    font-weight: 850;
+    box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+  }
+  #gateBtn:hover{
+    background: rgba(212,175,55,0.12);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.24);
+  }
+  #gateMsg{
+    margin-top: 10px;
+    font-size: 12px;
+    min-height: 18px;
+    color: rgba(255,255,255,0.75);
+  }
+  #gateMsg.gateErr{ color: #ffb4b4; }
+  #gateMsg.gateOk{ color: #b9ffcf; }
+  #gateMini{
+    margin-top: 12px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.60);
+    line-height: 1.35;
+  }
   </style>
 </head>
 
 <body>
+  <!-- =========================
+       PRIVATE GATE (CLIENT-SIDE)
+  ========================== -->
+  <div id="gateOverlay" aria-hidden="false">
+    <div id="gateCard" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+      <h1 id="gateTitle"><span class="mark"></span> Private access</h1>
+      <p>Enter the 6-digit code to view this dashboard.</p>
+
+      <div id="gateRow">
+        <input id="gateCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••" />
+        <button id="gateBtn" type="button">Unlock</button>
+      </div>
+
+      <div id="gateMsg"></div>
+      <div id="gateMini">This is a lightweight privacy screen. It keeps casual viewers out.</div>
+    </div>
+  </div>
+  <!-- ========================= END GATE ========================= -->
+
   <div id="appbar" class="appbar">
     <div class="appbar-inner">
       <div class="topline">
@@ -954,6 +1067,106 @@
     let HEAT_PICK = { y: 0, m: 0, d: 0 };
     let CAL_MIN_YEAR = 0;
     let CAL_MAX_YEAR = 0;
+
+    /* =========================
+       PRIVATE GATE (CLIENT-SIDE)
+       - Blocks loadData() until unlocked
+       NOTE: This is a "privacy screen", not real security.
+    ========================== */
+    const ACCESS_CODE = "123456";    // <-- CHANGE THIS
+    const REMEMBER_HOURS = 8;        // remember unlock on this device (set 0 to disable)
+
+    const gateOverlay = document.getElementById("gateOverlay");
+    const gateCode = document.getElementById("gateCode");
+    const gateBtn = document.getElementById("gateBtn");
+    const gateMsg = document.getElementById("gateMsg");
+
+    function gateNowMs(){ return Date.now(); }
+
+    function gateIsUnlocked(){
+      if (REMEMBER_HOURS <= 0) return false;
+      try{
+        const raw = localStorage.getItem("cruise_view_unlock_until");
+        if (!raw) return false;
+        const until = parseInt(raw, 10);
+        return Number.isFinite(until) && until > gateNowMs();
+      }catch{
+        return false;
+      }
+    }
+
+    function gateSetUnlocked(){
+      if (REMEMBER_HOURS <= 0) return;
+      try{
+        const until = gateNowMs() + REMEMBER_HOURS * 60 * 60 * 1000;
+        localStorage.setItem("cruise_view_unlock_until", String(until));
+      }catch{}
+    }
+
+    function gateShow(ok, text){
+      gateMsg.textContent = text || "";
+      gateMsg.className = ok ? "gateOk" : "gateErr";
+    }
+
+    function gateHide(){
+      gateOverlay.style.display = "none";
+      gateOverlay.setAttribute("aria-hidden", "true");
+    }
+
+    function gateNormalizeDigits(v){
+      return String(v || "").replace(/\D/g, "").slice(0, 6);
+    }
+
+    async function gateUnlock(){
+      const v = gateNormalizeDigits(gateCode.value);
+      gateCode.value = v;
+
+      if (v.length !== 6){
+        gateShow(false, "Need exactly 6 digits.");
+        gateCode.focus();
+        gateCode.select();
+        return false;
+      }
+      if (v !== ACCESS_CODE){
+        gateShow(false, "Wrong code.");
+        gateCode.focus();
+        gateCode.select();
+        return false;
+      }
+
+      gateSetUnlocked();
+      gateHide();
+      gateShow(true, "");
+      return true;
+    }
+
+    function gateInit(){
+      // Keep input numeric
+      gateCode.addEventListener("input", () => {
+        gateCode.value = gateNormalizeDigits(gateCode.value);
+      });
+
+      gateBtn.addEventListener("click", async () => {
+        const ok = await gateUnlock();
+        if (ok) loadData();
+      });
+
+      gateCode.addEventListener("keydown", async (e) => {
+        if (e.key === "Enter"){
+          const ok = await gateUnlock();
+          if (ok) loadData();
+        }
+      });
+
+      if (gateIsUnlocked()){
+        gateHide();
+        // Already unlocked -> load immediately
+        loadData();
+      } else {
+        // Locked -> focus input, do NOT load data yet
+        setTimeout(() => gateCode.focus(), 50);
+      }
+    }
 
     const q = document.getElementById("q");
     const out = document.getElementById("out");
@@ -1614,7 +1827,6 @@
 
     /* =========
        Date panel expand/collapse (delegated)
-       - Handles "Show all" / "Hide extra dates" without per-button listeners.
     ========= */
     out.addEventListener("click", (e) => {
       const btn = e.target.closest(".dateBtn[data-panel]");
@@ -1718,10 +1930,9 @@
       }
     }
 
-    window.addEventListener("DOMContentLoaded", loadData);
+    // IMPORTANT: gateInit loads data only after unlock
+    window.addEventListener("DOMContentLoaded", gateInit);
     reloadBtn.addEventListener("click", loadData);
   </script>
 </body>
 </html>
-
-
