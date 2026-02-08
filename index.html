@@ -1137,8 +1137,25 @@
     let CAL_MAX_YEAR = 0;
 
     const RELATIVE_IMAGE_BASE = "https://windstarcruises.com";
-
     const REMEMBER_HOURS = 8;
+
+    // ===== PERFORMANCE KNOBS =====
+    // Render only the first N matches for instant typing. Counts still reflect all matches.
+    const RENDER_LIMIT = 120;
+    // If you want literally everything rendered, set to Infinity (but it will lag again).
+    // const RENDER_LIMIT = Infinity;
+
+    // ===== INPUT SCHEDULING =====
+    // Prevent “slow weird search” by canceling in-flight renders while you type.
+    let APPLY_RAF = 0;
+
+    function scheduleApplyFilters(){
+      if (APPLY_RAF) cancelAnimationFrame(APPLY_RAF);
+      APPLY_RAF = requestAnimationFrame(() => {
+        APPLY_RAF = 0;
+        applyFilters();
+      });
+    }
 
     function chicagoDateParts(){
       const fmt = new Intl.DateTimeFormat("en-US", {
@@ -1312,11 +1329,6 @@
       }[c]));
     }
 
-    function textOf(item) {
-      try { return JSON.stringify(item).toLowerCase(); }
-      catch { return ""; }
-    }
-
     function pickFirst(obj, keys) {
       for (const k of keys) {
         const v = obj && obj[k];
@@ -1350,22 +1362,25 @@
     }
 
     function getShipName(item){
-        const direct = pickFirst(item, ["shipName", "ship", "ship_name", "shipNameText", "vessel", "yacht", "shipDisplayName"]);
-        if (direct) return String(direct).trim();
+      // If we precomputed it, use it.
+      if (item && item.__ship) return item.__ship;
 
-        const jt = pickFirst(item, ["journeyText"]);
-        if (typeof jt === "string") {
-            const m = jt.match(/\bon\s+(Star\s+(Breeze|Legend|Pride|Explorer|Seeker)|Wind\s+(Spirit|Star|Surf))\b/i);
-            if (m) return m[0].replace(/^on\s+/i, "").trim();
-        }
+      const direct = pickFirst(item, ["shipName", "ship", "ship_name", "shipNameText", "vessel", "yacht", "shipDisplayName"]);
+      if (direct) return String(direct).trim();
 
-        return "Unknown";
-        }
+      const jt = pickFirst(item, ["journeyText"]);
+      if (typeof jt === "string") {
+        const m = jt.match(/\bon\s+(Star\s+(Breeze|Legend|Pride|Explorer|Seeker)|Wind\s+(Spirit|Star|Surf))\b/i);
+        if (m) return m[0].replace(/^on\s+/i, "").trim();
+      }
+
+      return "Unknown";
+    }
 
     function buildRegionOptions(items) {
       const regions = new Set();
       for (const it of items) {
-        const r = pickFirst(it, ["region"]);
+        const r = it.__region || pickFirst(it, ["region"]);
         if (r) regions.add(String(r).trim());
       }
       const sorted = Array.from(regions).sort((a,b) => a.localeCompare(b));
@@ -1382,7 +1397,7 @@
     function buildShipOptions(items){
       const counts = new Map();
       for (const it of items) {
-        const ship = getShipName(it) || "Unknown";
+        const ship = it.__ship || getShipName(it) || "Unknown";
         counts.set(ship, (counts.get(ship) || 0) + 1);
       }
 
@@ -1792,14 +1807,14 @@
       else SELECTED_SHIPS.delete(ship);
 
       updateShipBtnLabel();
-      applyFilters();
+      scheduleApplyFilters();
     });
 
     shipClear.addEventListener("click", () => {
       SELECTED_SHIPS.clear();
       updateShipBtnLabel();
       shipList.querySelectorAll("input[type=checkbox]").forEach(x => x.checked = false);
-      applyFilters();
+      scheduleApplyFilters();
     });
 
     function buildDatesHtml(dateRanges, toggleKey) {
@@ -1855,7 +1870,7 @@
       if (s.startsWith("http://") || s.startsWith("https://")) return s;
       if (s.startsWith("//")) return "https:" + s;
       if (s.startsWith("/")) return RELATIVE_IMAGE_BASE.replace(/\/+$/,"") + s;
-      return s; // leave as-is (might be relative to your site)
+      return s;
     }
 
     function renderTimes(times){
@@ -1902,15 +1917,39 @@
       }).join("");
     }
 
+    // ===== LAZY itinerary render: fill detailsBody on first open =====
+    out.addEventListener("toggle", (e) => {
+      const det = e.target;
+      if (!(det instanceof HTMLDetailsElement)) return;
+      if (!det.open) return;
+
+      const body = det.querySelector(".detailsBody");
+      if (!body) return;
+
+      // already rendered?
+      if (body.getAttribute("data-rendered") === "1") return;
+
+      const key = det.getAttribute("data-itkey") || "";
+      if (!key) return;
+
+      const it = DATA.find(x => String(x.__key) === key);
+      if (!it) return;
+
+      body.innerHTML = renderItinerary(it.itinerary);
+      body.setAttribute("data-rendered", "1");
+    }, true);
+
     function render(list) {
       out.innerHTML = "";
 
-      const capped = list;
+      const totalMatches = list.length;
+      const capped = list.slice(0, Number.isFinite(RENDER_LIMIT) ? RENDER_LIMIT : list.length);
+
       const frag = document.createDocumentFragment();
 
       for (const item of capped) {
         const title = pickFirst(item, ["title", "name", "itineraryName", "cruiseName"]);
-        const regionRaw = pickFirst(item, ["region"]);
+        const regionRaw = item.__region || pickFirst(item, ["region"]);
         const region = regionRaw ? toTitleCase(regionRaw) : "";
         const duration = normalizeDuration(item);
         const journey = pickFirst(item, ["journeyText"]);
@@ -1927,15 +1966,15 @@
         const safeUrl = (typeof url === "string" && url.startsWith("http")) ? url : "";
         const safeImg = (typeof img === "string" && img.startsWith("http")) ? img : "";
 
-        const toggleKey = safeUrl || (String(title||"") + "|" + String(journey||"") + "|" + String(regionRaw||"") + "|" + String(duration||""));
-        const shipName = toTitleCase(getShipName(item));
+        const toggleKey = item.__key || safeUrl || (String(title||"") + "|" + String(journey||"") + "|" + String(regionRaw||"") + "|" + String(duration||""));
+        const shipName = toTitleCase(item.__ship || getShipName(item));
 
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
           <div class="card-inner">
             <div class="thumb">
-              ${safeImg ? `<img src="${escapeHtml(safeImg)}" alt="">` : ``}
+              ${safeImg ? `<img loading="lazy" decoding="async" src="${escapeHtml(safeImg)}" alt="">` : ``}
             </div>
 
             <div class="content">
@@ -1956,17 +1995,20 @@
               </div>
 
               ${journey ? `<div class="meta" style="margin-top:8px;">🧭 ${escapeHtml(journey)}</div>` : ``}
-
               ${metaDesc ? `<div class="descBlock">${escapeHtml(metaDesc)}</div>` : ``}
 
-              ${itinerary.length ? `
-                <details class="details">
-                  <summary>Itinerary (${itinerary.length} day${itinerary.length===1?"":"s"})</summary>
-                  <div class="detailsBody">
-                    ${renderItinerary(itinerary)}
-                  </div>
-                </details>
-              ` : ``}
+              ${
+                itinerary.length
+                ? `
+                  <details class="details" data-itkey="${escapeHtml(String(item.__key || toggleKey))}">
+                    <summary>Itinerary (${itinerary.length} day${itinerary.length===1?"":"s"})</summary>
+                    <div class="detailsBody" data-rendered="0">
+                      <div class="itEmpty">Loading itinerary…</div>
+                    </div>
+                  </details>
+                `
+                : ``
+              }
 
               <div class="dates-block">
                 <div class="dates-title"><span>Available dates</span></div>
@@ -1980,8 +2022,10 @@
 
       out.appendChild(frag);
 
-      const shown = capped.length;
-      countNote.textContent = `Matches: ${list.length} (rendered: ${shown})`;
+      countNote.textContent =
+        (totalMatches > capped.length)
+          ? `Matches: ${totalMatches} (rendered: ${capped.length}). Tip: narrow search to see more.`
+          : `Matches: ${totalMatches}`;
 
       applyHeatToDom();
     }
@@ -2011,6 +2055,7 @@
       }
     });
 
+    // ===== FAST FILTERING USING PRECOMPUTED FIELDS =====
     function applyFilters() {
       const needle = q.value.trim().toLowerCase();
       const region = regionFilter.value;
@@ -2018,32 +2063,86 @@
 
       let list = DATA;
 
-      if (region) list = list.filter(it => String(pickFirst(it, ["region"]) || "").trim() === region);
+      if (region) list = list.filter(it => it.__region === region);
 
-      if (datesMode === "hasDates") list = list.filter(it => Array.isArray(it.dateRanges) && it.dateRanges.length > 0);
-      else if (datesMode === "noDates") list = list.filter(it => !(Array.isArray(it.dateRanges) && it.dateRanges.length > 0));
+      if (datesMode === "hasDates") list = list.filter(it => it.__hasDates);
+      else if (datesMode === "noDates") list = list.filter(it => !it.__hasDates);
 
       if (SELECTED_SHIPS.size > 0) {
-        list = list.filter(it => SELECTED_SHIPS.has(getShipName(it) || "Unknown"));
+        list = list.filter(it => SELECTED_SHIPS.has(it.__ship || "Unknown"));
       }
 
-      if (needle) list = list.filter(it => textOf(it).includes(needle));
+      if (needle) {
+        // super cheap substring match against prebuilt search string
+        list = list.filter(it => (it.__search || "").includes(needle));
+      }
 
       render(list);
 
-      const shown = list.length;
-      setStatus("good", `Loaded ${DATA.length} items · Showing ${shown} of ${list.length} match${list.length===1?"":"es"}`);
+      setStatus("good", `Loaded ${DATA.length} items · Showing ${Math.min(list.length, RENDER_LIMIT)} of ${list.length} match${list.length===1?"":"es"}`);
     }
 
-    q.addEventListener("input", applyFilters);
-    regionFilter.addEventListener("change", applyFilters);
-    datesFilter.addEventListener("change", applyFilters);
+    // Use RAF scheduling instead of raw applyFilters per keystroke
+    q.addEventListener("input", scheduleApplyFilters);
+    regionFilter.addEventListener("change", scheduleApplyFilters);
+    datesFilter.addEventListener("change", scheduleApplyFilters);
 
     const obs = new IntersectionObserver((entries) => {
       const entry = entries[0];
       heatFab.style.display = entry.isIntersecting ? "none" : "flex";
     }, { threshold: 0.1 });
     obs.observe(appbar);
+
+    function normalizeForSearch(v){
+      if (v == null) return "";
+      if (typeof v === "string") return v;
+      if (typeof v === "number" || typeof v === "boolean") return String(v);
+      try { return JSON.stringify(v); } catch { return ""; }
+    }
+
+    function buildSearchIndex(item){
+      // Choose “cheap but useful” fields (don’t stringify the whole object every time).
+      // You can add/remove fields here depending on what you search for most.
+      const parts = [];
+
+      parts.push(normalizeForSearch(pickFirst(item, ["title","name","itineraryName","cruiseName"])));
+      parts.push(normalizeForSearch(pickFirst(item, ["region"])));
+      parts.push(normalizeForSearch(pickFirst(item, ["journeyText"])));
+      parts.push(normalizeForSearch(pickFirst(item, ["tourMetaDescription"])));
+
+      // Dates
+      if (Array.isArray(item.dateRanges)) parts.push(item.dateRanges.join(" | "));
+
+      // Ports (if itinerary exists)
+      if (Array.isArray(item.itinerary)) {
+        for (const day of item.itinerary) {
+          if (Array.isArray(day?.stops)) {
+            for (const s of day.stops) {
+              parts.push(normalizeForSearch(pickFirst(s, ["port"])));
+            }
+          }
+        }
+      }
+
+      // Ship
+      const ship = getShipName(item);
+      parts.push(ship);
+
+      return parts
+        .join("  ")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function computeKey(item){
+      const title = pickFirst(item, ["title","name","itineraryName","cruiseName"]);
+      const region = pickFirst(item, ["region"]);
+      const journey = pickFirst(item, ["journeyText"]);
+      const duration = normalizeDuration(item);
+      const url = pickFirst(item, ["viewDetailsUrl","viewDetailsHref","url","link"]);
+      return String(url || `${title}|${region}|${duration}|${journey}`);
+    }
 
     async function loadData() {
       try {
@@ -2064,6 +2163,19 @@
           else throw new Error("Loaded JSON but couldn't find an array (expected raw.items).");
         }
 
+        // ===== PRECOMPUTE INDEXES FOR INSTANT SEARCH =====
+        for (const it of DATA) {
+          const ship = getShipName(it) || "Unknown";
+          const region = String(pickFirst(it, ["region"]) || "").trim();
+          const hasDates = Array.isArray(it.dateRanges) && it.dateRanges.length > 0;
+
+          it.__ship = ship;
+          it.__region = region;
+          it.__hasDates = hasDates;
+          it.__key = computeKey(it);
+          it.__search = buildSearchIndex(it);
+        }
+
         q.disabled = false;
         regionFilter.disabled = false;
         datesFilter.disabled = false;
@@ -2081,12 +2193,15 @@
         closeShipMenu();
 
         updateHeatLabels();
-        applyFilters();
+        scheduleApplyFilters();
       } catch (e) {
         setStatus("bad", `Failed to load JSON: ${e.message}`);
         countNote.textContent = "";
       }
     }
+
+    heatBtn.addEventListener("click", (e) => { e.stopPropagation(); openHeatModal(); });
+    heatFab.addEventListener("click", (e) => { e.stopPropagation(); openHeatModal(); });
 
     window.addEventListener("DOMContentLoaded", gateInit);
     reloadBtn.addEventListener("click", loadData);
