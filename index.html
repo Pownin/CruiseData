@@ -754,6 +754,89 @@
     border-color: rgba(212,175,55,1);
   }
 
+  .descBlock{
+    margin-top: 10px;
+    color: rgba(255,255,255,0.86);
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .details{
+    margin-top: 10px;
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 16px;
+    background: rgba(0,0,0,0.18);
+    overflow:hidden;
+  }
+  .details summary{
+    cursor:pointer;
+    padding: 10px 12px;
+    font-weight: 850;
+    color: rgba(255,255,255,0.92);
+    list-style: none;
+    user-select:none;
+  }
+  .details summary::-webkit-details-marker{ display:none; }
+  .details .detailsBody{
+    border-top: 1px solid rgba(255,255,255,0.10);
+    padding: 10px 12px 12px;
+  }
+
+  .itDay{ padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .itDay:last-child{ border-bottom: none; }
+  .itDayTitle{ font-weight: 900; letter-spacing: .2px; margin-bottom: 8px; }
+
+  .itStop{
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.04);
+    border-radius: 14px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  .itStop:last-child{ margin-bottom: 0; }
+
+  .itStopTop{
+    display:flex;
+    gap: 10px;
+    align-items:center;
+    justify-content: space-between;
+  }
+  .itPort{ font-weight: 850; }
+
+  .itImg{
+    width: 72px;
+    height: 46px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    flex: 0 0 auto;
+  }
+
+  .itTimes{
+    margin-top: 8px;
+    display:flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.80);
+  }
+  .itTime{
+    padding: 4px 8px;
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 999px;
+    background: rgba(0,0,0,0.18);
+  }
+  .itDesc{
+    margin-top: 8px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.78);
+    line-height: 1.35;
+  }
+  .itEmpty{
+    color: rgba(255,255,255,0.65);
+    font-size: 12px;
+  }
+
   @media (max-width: 720px){
     :root{
       --controlH: 40px;
@@ -906,12 +989,6 @@
   }
   #gateMsg.gateErr{ color: #ffb4b4; }
   #gateMsg.gateOk{ color: #b9ffcf; }
-  #gateMini{
-    margin-top: 12px;
-    font-size: 11px;
-    color: rgba(255,255,255,0.60);
-    line-height: 1.35;
-  }
   </style>
 </head>
 
@@ -922,10 +999,11 @@
       <p>Enter passcode to gain access.</p>
 
       <div id="gateRow">
-        <input id="gateCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="••••••" />
+        <input id="gateCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="••••••••" />
         <button id="gateBtn" type="button">Unlock</button>
       </div>
 
+      <div id="gateMsg" aria-live="polite"></div>
     </div>
   </div>
 
@@ -936,7 +1014,6 @@
           <h1><span class="mark"></span> Cruise Data</h1>
           <div class="subtitle">
             <span class="pill"><span id="statusDot" class="dot warn"></span><span id="status">Loading…</span></span>
-            <span class="pill"><span class="dot"></span>Shows first 500 matches for speed</span>
             <span class="pill"><span class="dot"></span>Ship filter is multi-select</span>
             <span class="pill"><span class="dot"></span><span id="heatLabel">Date heat: off</span></span>
           </div>
@@ -944,7 +1021,7 @@
       </div>
 
       <div class="toolbar">
-        <button id="reload" class="btn primary" title="Reload cruiseDataNew.json">♻️ Reload</button>
+        <button id="reload" class="btn primary" title="Reload cruiseData.json">♻️ Reload</button>
 
         <div class="field" title="Search across all fields">
           🔎
@@ -1059,6 +1136,8 @@
     let CAL_MIN_YEAR = 0;
     let CAL_MAX_YEAR = 0;
 
+    const RELATIVE_IMAGE_BASE = "https://windstarcruises.com";
+
     const REMEMBER_HOURS = 8;
 
     function chicagoDateParts(){
@@ -1125,7 +1204,7 @@
       gateCode.value = v;
 
       if (v.length !== 8){
-        gateShow(false, "Need 8 digits (••••••).");
+        gateShow(false, "Need 8 digits.");
         gateCode.focus();
         gateCode.select();
         return false;
@@ -1271,16 +1350,17 @@
     }
 
     function getShipName(item){
-      const direct = pickFirst(item, ["ship", "shipName", "yacht", "vessel"]);
-      if (direct) return String(direct);
+        const direct = pickFirst(item, ["shipName", "ship", "ship_name", "shipNameText", "vessel", "yacht", "shipDisplayName"]);
+        if (direct) return String(direct).trim();
 
-      const jt = pickFirst(item, ["journeyText"]);
-      if (typeof jt === "string") {
-        const m = jt.match(/\bon\s+(Star\s+(Breeze|Legend|Pride|Explorer|Seeker)|Wind\s+(Spirit|Star|Surf))\b/i);
-        if (m) return m[0].replace(/^on\s+/i, "").trim();
-      }
-      return "Unknown";
-    }
+        const jt = pickFirst(item, ["journeyText"]);
+        if (typeof jt === "string") {
+            const m = jt.match(/\bon\s+(Star\s+(Breeze|Legend|Pride|Explorer|Seeker)|Wind\s+(Spirit|Star|Surf))\b/i);
+            if (m) return m[0].replace(/^on\s+/i, "").trim();
+        }
+
+        return "Unknown";
+        }
 
     function buildRegionOptions(items) {
       const regions = new Set();
@@ -1762,10 +1842,70 @@
       `;
     }
 
+    function fmtStartingFrom(sf){
+      if (!sf) return "";
+      if (typeof sf === "string") return sf;
+      if (typeof sf === "object") return pickFirst(sf, ["text", "value", "label"]) || "";
+      return "";
+    }
+
+    function normalizeImageUrl(u){
+      const s = String(u || "").trim();
+      if (!s) return "";
+      if (s.startsWith("http://") || s.startsWith("https://")) return s;
+      if (s.startsWith("//")) return "https:" + s;
+      if (s.startsWith("/")) return RELATIVE_IMAGE_BASE.replace(/\/+$/,"") + s;
+      return s; // leave as-is (might be relative to your site)
+    }
+
+    function renderTimes(times){
+      if (!times || typeof times !== "object") return "";
+      const entries = Object.entries(times).filter(([k,v]) => v !== "" && v != null);
+      if (!entries.length) return "";
+      return `<div class="itTimes">${
+        entries.map(([k,v]) => `<span class="itTime"><b>${escapeHtml(k)}:</b> ${escapeHtml(String(v))}</span>`).join("")
+      }</div>`;
+    }
+
+    function renderItinerary(itinerary){
+      if (!Array.isArray(itinerary) || itinerary.length === 0) return `<div class="itEmpty">No itinerary data</div>`;
+
+      return itinerary.map(dayObj => {
+        const day = pickFirst(dayObj, ["day"]) || "";
+        const date = pickFirst(dayObj, ["date"]) || "";
+        const stops = Array.isArray(dayObj.stops) ? dayObj.stops : [];
+
+        const stopsHtml = stops.map(s => {
+          const port = pickFirst(s, ["port"]) || "";
+          const img = normalizeImageUrl(pickFirst(s, ["imageUrl"]) || "");
+          const desc = pickFirst(s, ["description"]) || "";
+          const safeImg = (typeof img === "string" && (img.startsWith("http://") || img.startsWith("https://"))) ? img : "";
+
+          return `
+            <div class="itStop">
+              <div class="itStopTop">
+                <div class="itPort">${escapeHtml(port)}</div>
+                ${safeImg ? `<img class="itImg" src="${escapeHtml(safeImg)}" alt="">` : ``}
+              </div>
+              ${renderTimes(s.times)}
+              ${desc ? `<div class="itDesc">${escapeHtml(desc)}</div>` : ``}
+            </div>
+          `;
+        }).join("");
+
+        return `
+          <div class="itDay">
+            <div class="itDayTitle">Day ${escapeHtml(day)}${date ? ` · ${escapeHtml(date)}` : ""}</div>
+            <div class="itStops">${stopsHtml || `<div class="itEmpty">No stops</div>`}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
     function render(list) {
       out.innerHTML = "";
 
-      const capped = list.slice(0, 500);
+      const capped = list;
       const frag = document.createDocumentFragment();
 
       for (const item of capped) {
@@ -1775,8 +1915,14 @@
         const duration = normalizeDuration(item);
         const journey = pickFirst(item, ["journeyText"]);
         const url = pickFirst(item, ["viewDetailsUrl", "viewDetailsHref", "url", "link"]);
-        const img = pickFirst(item, ["imageUrl"]);
+        const img = normalizeImageUrl(pickFirst(item, ["imageUrl"]));
+
         const dateRanges = Array.isArray(item.dateRanges) ? item.dateRanges : [];
+
+        const startingFromText = fmtStartingFrom(item.startingFrom);
+        const callForAvailability = !!item.callForAvailability;
+        const metaDesc = pickFirst(item, ["tourMetaDescription"]);
+        const itinerary = Array.isArray(item.itinerary) ? item.itinerary : [];
 
         const safeUrl = (typeof url === "string" && url.startsWith("http")) ? url : "";
         const safeImg = (typeof img === "string" && img.startsWith("http")) ? img : "";
@@ -1800,6 +1946,8 @@
                     ${region ? `<span class="tag">🌍 ${escapeHtml(region)}</span>` : ``}
                     ${duration ? `<span class="tag">⏱️ ${escapeHtml(duration)}</span>` : ``}
                     <span class="tag">🚢 ${escapeHtml(shipName)}</span>
+                    ${startingFromText ? `<span class="tag">💲 ${escapeHtml(startingFromText)}</span>` : ``}
+                    ${callForAvailability ? `<span class="tag">☎️ Call for availability</span>` : ``}
                     ${dateRanges.length ? `<span class="tag">📅 ${dateRanges.length} date${dateRanges.length===1?"":"s"}</span>` : `<span class="tag">📅 No dates</span>`}
                   </div>
                 </div>
@@ -1808,6 +1956,17 @@
               </div>
 
               ${journey ? `<div class="meta" style="margin-top:8px;">🧭 ${escapeHtml(journey)}</div>` : ``}
+
+              ${metaDesc ? `<div class="descBlock">${escapeHtml(metaDesc)}</div>` : ``}
+
+              ${itinerary.length ? `
+                <details class="details">
+                  <summary>Itinerary (${itinerary.length} day${itinerary.length===1?"":"s"})</summary>
+                  <div class="detailsBody">
+                    ${renderItinerary(itinerary)}
+                  </div>
+                </details>
+              ` : ``}
 
               <div class="dates-block">
                 <div class="dates-title"><span>Available dates</span></div>
@@ -1821,7 +1980,7 @@
 
       out.appendChild(frag);
 
-      const shown = Math.min(list.length, 500);
+      const shown = capped.length;
       countNote.textContent = `Matches: ${list.length} (rendered: ${shown})`;
 
       applyHeatToDom();
@@ -1872,7 +2031,8 @@
 
       render(list);
 
-      const shown = Math.min(list.length, 500);
+      // ===== CHANGED: no 500 math anymore =====
+      const shown = list.length;
       setStatus("good", `Loaded ${DATA.length} items · Showing ${shown} of ${list.length} match${list.length===1?"":"es"}`);
     }
 
@@ -1890,8 +2050,8 @@
       try {
         setStatus("warn", "Loading…");
 
-        const res = await fetch("./cruiseDataNew.json", { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status} (couldn't find cruiseDataNew.json)`);
+        const res = await fetch("./cruiseData.json", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status} (couldn't find cruiseData.json)`);
 
         const raw = await res.json();
 
@@ -1934,7 +2094,3 @@
   </script>
 </body>
 </html>
-
-
-
-
