@@ -1032,6 +1032,11 @@
           <option value="">All regions</option>
         </select>
 
+        <!-- NEW: Days (duration) filter -->
+        <select id="daysFilter" class="select" disabled>
+          <option value="">All durations</option>
+        </select>
+
         <div class="shipWrap">
           <button id="shipBtn" class="btn" disabled title="Filter by ship">
             🚢 Ships <span id="shipCount" style="opacity:.75;"></span>
@@ -1271,6 +1276,7 @@
     const status = document.getElementById("status");
     const statusDot = document.getElementById("statusDot");
     const regionFilter = document.getElementById("regionFilter");
+    const daysFilter = document.getElementById("daysFilter"); // NEW
     const datesFilter = document.getElementById("datesFilter");
     const countNote = document.getElementById("countNote");
     const reloadBtn = document.getElementById("reload");
@@ -1377,6 +1383,36 @@
       return "Unknown";
     }
 
+    // NEW: robust extraction of numeric days
+    function extractDaysNumber(item){
+      const d = item?.duration;
+
+      // duration: { days: 11 }
+      if (d && typeof d === "object"){
+        const n = Number(d.days ?? d.day ?? d.numDays ?? d.value);
+        if (Number.isFinite(n) && n > 0) return n;
+
+        const t = String(d.text ?? d.label ?? "").trim();
+        const m = t.match(/\b(\d{1,3})\s*day/i);
+        if (m) return Number(m[1]);
+      }
+
+      // duration: "11 Days"
+      if (typeof d === "string"){
+        const m = d.match(/\b(\d{1,3})\s*day/i);
+        if (m) return Number(m[1]);
+      }
+
+      // Fallback: journeyText
+      const jt = pickFirst(item, ["journeyText"]);
+      if (typeof jt === "string"){
+        const m = jt.match(/\b(\d{1,3})\s*day/i);
+        if (m) return Number(m[1]);
+      }
+
+      return 0;
+    }
+
     function buildRegionOptions(items) {
       const regions = new Set();
       for (const it of items) {
@@ -1387,6 +1423,19 @@
       regionFilter.innerHTML =
         `<option value="">All regions</option>` +
         sorted.map(r => `<option value="${escapeHtml(r)}">${escapeHtml(toTitleCase(r))}</option>`).join("");
+    }
+
+    // NEW: duration (days) options
+    function buildDaysOptions(items){
+      const set = new Set();
+      for (const it of items){
+        const n = Number(it.__days || 0);
+        if (Number.isFinite(n) && n > 0) set.add(n);
+      }
+      const sorted = Array.from(set).sort((a,b) => a - b);
+      daysFilter.innerHTML =
+        `<option value="">All durations</option>` +
+        sorted.map(n => `<option value="${n}">${n} day${n===1?"":"s"}</option>`).join("");
     }
 
     function updateShipBtnLabel(){
@@ -1969,6 +2018,8 @@
         const toggleKey = item.__key || safeUrl || (String(title||"") + "|" + String(journey||"") + "|" + String(regionRaw||"") + "|" + String(duration||""));
         const shipName = toTitleCase(item.__ship || getShipName(item));
 
+        const daysN = Number(item.__days || 0);
+
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
@@ -1984,6 +2035,7 @@
                   <div class="meta">
                     ${region ? `<span class="tag">🌍 ${escapeHtml(region)}</span>` : ``}
                     ${duration ? `<span class="tag">⏱️ ${escapeHtml(duration)}</span>` : ``}
+                    ${daysN ? `<span class="tag">🗓️ ${daysN} day${daysN===1?"":"s"}</span>` : ``}
                     <span class="tag">🚢 ${escapeHtml(shipName)}</span>
                     ${startingFromText ? `<span class="tag">💲 ${escapeHtml(startingFromText)}</span>` : ``}
                     ${callForAvailability ? `<span class="tag">☎️ Call for availability</span>` : ``}
@@ -2059,11 +2111,15 @@
     function applyFilters() {
       const needle = q.value.trim().toLowerCase();
       const region = regionFilter.value;
+      const days = Number(daysFilter.value || 0); // NEW
       const datesMode = datesFilter.value;
 
       let list = DATA;
 
       if (region) list = list.filter(it => it.__region === region);
+
+      // NEW: exact days filter
+      if (days > 0) list = list.filter(it => Number(it.__days || 0) === days);
 
       if (datesMode === "hasDates") list = list.filter(it => it.__hasDates);
       else if (datesMode === "noDates") list = list.filter(it => !it.__hasDates);
@@ -2085,6 +2141,7 @@
     // Use RAF scheduling instead of raw applyFilters per keystroke
     q.addEventListener("input", scheduleApplyFilters);
     regionFilter.addEventListener("change", scheduleApplyFilters);
+    daysFilter.addEventListener("change", scheduleApplyFilters); // NEW
     datesFilter.addEventListener("change", scheduleApplyFilters);
 
     const obs = new IntersectionObserver((entries) => {
@@ -2128,6 +2185,10 @@
       const ship = getShipName(item);
       parts.push(ship);
 
+      // Days
+      const days = extractDaysNumber(item);
+      if (days) parts.push(String(days));
+
       return parts
         .join("  ")
         .toLowerCase()
@@ -2168,25 +2229,30 @@
           const ship = getShipName(it) || "Unknown";
           const region = String(pickFirst(it, ["region"]) || "").trim();
           const hasDates = Array.isArray(it.dateRanges) && it.dateRanges.length > 0;
+          const days = extractDaysNumber(it); // NEW
 
           it.__ship = ship;
           it.__region = region;
           it.__hasDates = hasDates;
+          it.__days = days; // NEW
           it.__key = computeKey(it);
           it.__search = buildSearchIndex(it);
         }
 
         q.disabled = false;
         regionFilter.disabled = false;
+        daysFilter.disabled = false; // NEW
         datesFilter.disabled = false;
         shipBtn.disabled = false;
         heatBtn.disabled = false;
 
         buildRegionOptions(DATA);
         buildShipOptions(DATA);
+        buildDaysOptions(DATA); // NEW
 
         q.value = "";
         regionFilter.value = "";
+        daysFilter.value = ""; // NEW
         datesFilter.value = "";
         SELECTED_SHIPS.clear();
         updateShipBtnLabel();
