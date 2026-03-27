@@ -1097,6 +1097,20 @@
     const MAX_PREVIEW = 10;
     const AUTO_COLLAPSE_OVER = 15;
 
+    // Render only the first N matches for fast filtering.
+    const RENDER_LIMIT = 120;
+
+    // Collapse repeated filter updates into a single animation frame.
+    let APPLY_RAF = 0;
+
+    function scheduleApplyFilters(){
+      if (APPLY_RAF) cancelAnimationFrame(APPLY_RAF);
+      APPLY_RAF = requestAnimationFrame(() => {
+        APPLY_RAF = 0;
+        applyFilters();
+      });
+    }
+
     function setStatus(kind, msg){
       status.textContent = msg;
       statusDot.className = "dot " + (kind === "good" ? "good" : kind === "bad" ? "bad" : "warn");
