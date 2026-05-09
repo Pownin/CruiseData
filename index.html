@@ -373,6 +373,7 @@
     background: rgba(212,175,55,0.12);
     box-shadow: 0 14px 30px rgba(0,0,0,0.24);
   }
+  .viewDetailsLink{ cursor:pointer; font-family: inherit; }
 
   .dates-block{
     margin-top: 12px;
@@ -1130,36 +1131,6 @@
       return "";
     }
 
-
-    function getViewDetailsUrl(item) {
-      let url =
-        item?.viewDetailsUrl ||
-        item?.viewDetailsHref ||
-        item?.url ||
-        item?.link ||
-        "";
-
-      url = String(url).trim();
-      if (!url) return "";
-
-      // Full URL already
-      if (url.startsWith("http://") || url.startsWith("https://")) {
-        return url;
-      }
-
-      // Protocol-relative URL
-      if (url.startsWith("//")) {
-        return "https:" + url;
-      }
-
-      // Windstar relative URL like /tour-details/...
-      if (url.startsWith("/")) {
-        return "https://windstarcruises.com" + url;
-      }
-
-      return "";
-    }
-
     function normalizeDuration(item) {
       const v = item?.duration;
       if (typeof v === "string") return v;
@@ -1783,6 +1754,26 @@
       }).join("");
     }
 
+
+    function getViewDetailsUrl(item) {
+      let url =
+        item?.viewDetailsUrl ||
+        item?.viewDetailsHref ||
+        item?.seeAllDatesUrl ||
+        item?.url ||
+        item?.link ||
+        "";
+
+      url = String(url).trim();
+      if (!url) return "";
+
+      if (url.startsWith("http://") || url.startsWith("https://")) return url;
+      if (url.startsWith("//")) return "https:" + url;
+      if (url.startsWith("/")) return "https://windstarcruises.com" + url;
+
+      return "";
+    }
+
     // ===== LAZY itinerary render: fill detailsBody on first open =====
     out.addEventListener("toggle", (e) => {
       const det = e.target;
@@ -1819,7 +1810,6 @@
         const region = regionRaw ? toTitleCase(regionRaw) : "";
         const duration = normalizeDuration(item);
         const journey = pickFirst(item, ["journeyText"]);
-        const safeUrl = getViewDetailsUrl(item);
         const img = normalizeImageUrl(pickFirst(item, ["imageUrl"]));
 
         const dateRanges = Array.isArray(item.dateRanges) ? item.dateRanges : [];
@@ -1829,6 +1819,7 @@
         const metaDesc = pickFirst(item, ["tourMetaDescription"]);
         const itinerary = Array.isArray(item.itinerary) ? item.itinerary : [];
 
+        const safeUrl = getViewDetailsUrl(item);
         const safeImg = (typeof img === "string" && img.startsWith("http")) ? img : "";
 
         const toggleKey = item.__key || safeUrl || (String(title||"") + "|" + String(journey||"") + "|" + String(regionRaw||"") + "|" + String(duration||""));
@@ -1858,7 +1849,7 @@
                   </div>
                 </div>
 
-                ${safeUrl ? `<a class="link" href="${escapeHtml(safeUrl)}" data-pkgid="${escapeHtml(item.pkgid || "")}" data-url="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer">Open View Details ↗</a>` : ``}
+                ${safeUrl ? `<button class="link viewDetailsLink" type="button" data-url="${escapeHtml(safeUrl)}" data-pkgid="${escapeHtml(String(item.pkgid || ""))}">Open View Details ↗</button>` : ``}
               </div>
 
               ${journey ? `<div class="meta" style="margin-top:8px;">🧭 ${escapeHtml(journey)}</div>` : ``}
@@ -1896,6 +1887,27 @@
 
       applyHeatToDom();
     }
+
+
+    // Force View Details to open the URL stored on that exact card/button.
+    // This bypasses any weird stale anchor behavior and prevents every card from sharing one link.
+    out.addEventListener("click", (e) => {
+      const linkBtn = e.target.closest(".viewDetailsLink[data-url]");
+      if (!linkBtn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const url = linkBtn.getAttribute("data-url") || "";
+      if (!url) return;
+
+      console.log("Opening View Details", {
+        pkgid: linkBtn.getAttribute("data-pkgid") || "",
+        url
+      });
+
+      window.open(url, "_blank", "noopener");
+    });
 
     out.addEventListener("click", (e) => {
       const btn = e.target.closest(".dateBtn[data-panel]");
