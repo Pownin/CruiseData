@@ -373,7 +373,6 @@
     background: rgba(212,175,55,0.12);
     box-shadow: 0 14px 30px rgba(0,0,0,0.24);
   }
-  .viewDetailsLink{ cursor:pointer; font-family: inherit; }
 
   .dates-block{
     margin-top: 12px;
@@ -1710,6 +1709,21 @@
       return s;
     }
 
+    function normalizeViewDetailsUrl(item){
+      // IMPORTANT: prefer viewDetailsHref first.
+      // Some scraped files can accidentally repeat viewDetailsUrl for every item,
+      // while viewDetailsHref still contains the correct per-itinerary route.
+      let url = pickFirst(item, ["viewDetailsHref", "href", "detailsHref", "viewDetailsUrl", "url", "link"]);
+      url = String(url || "").trim();
+
+      if (!url) return "";
+      if (url.startsWith("http://") || url.startsWith("https://")) return url;
+      if (url.startsWith("//")) return "https:" + url;
+      if (url.startsWith("/")) return RELATIVE_IMAGE_BASE.replace(/\/+$/, "") + url;
+
+      return "";
+    }
+
     function renderTimes(times){
       if (!times || typeof times !== "object") return "";
       const entries = Object.entries(times).filter(([k,v]) => v !== "" && v != null);
@@ -1754,26 +1768,6 @@
       }).join("");
     }
 
-
-    function getViewDetailsUrl(item) {
-      let url =
-        item?.viewDetailsUrl ||
-        item?.viewDetailsHref ||
-        item?.seeAllDatesUrl ||
-        item?.url ||
-        item?.link ||
-        "";
-
-      url = String(url).trim();
-      if (!url) return "";
-
-      if (url.startsWith("http://") || url.startsWith("https://")) return url;
-      if (url.startsWith("//")) return "https:" + url;
-      if (url.startsWith("/")) return "https://windstarcruises.com" + url;
-
-      return "";
-    }
-
     // ===== LAZY itinerary render: fill detailsBody on first open =====
     out.addEventListener("toggle", (e) => {
       const det = e.target;
@@ -1810,6 +1804,7 @@
         const region = regionRaw ? toTitleCase(regionRaw) : "";
         const duration = normalizeDuration(item);
         const journey = pickFirst(item, ["journeyText"]);
+        const safeUrl = normalizeViewDetailsUrl(item);
         const img = normalizeImageUrl(pickFirst(item, ["imageUrl"]));
 
         const dateRanges = Array.isArray(item.dateRanges) ? item.dateRanges : [];
@@ -1819,7 +1814,6 @@
         const metaDesc = pickFirst(item, ["tourMetaDescription"]);
         const itinerary = Array.isArray(item.itinerary) ? item.itinerary : [];
 
-        const safeUrl = getViewDetailsUrl(item);
         const safeImg = (typeof img === "string" && img.startsWith("http")) ? img : "";
 
         const toggleKey = item.__key || safeUrl || (String(title||"") + "|" + String(journey||"") + "|" + String(regionRaw||"") + "|" + String(duration||""));
@@ -1849,7 +1843,7 @@
                   </div>
                 </div>
 
-                ${safeUrl ? `<button class="link viewDetailsLink" type="button" data-url="${escapeHtml(safeUrl)}" data-pkgid="${escapeHtml(String(item.pkgid || ""))}">Open View Details ↗</button>` : ``}
+                ${safeUrl ? `<a class="link" href="${escapeHtml(safeUrl)}" data-pkgid="${escapeHtml(item.pkgid || "")}" data-href="${escapeHtml(item.viewDetailsHref || "")}" data-url="${escapeHtml(item.viewDetailsUrl || "")}" target="_blank" rel="noopener">Open View Details ↗</a>` : ``}
               </div>
 
               ${journey ? `<div class="meta" style="margin-top:8px;">🧭 ${escapeHtml(journey)}</div>` : ``}
@@ -1880,6 +1874,16 @@
 
       out.appendChild(frag);
 
+      // Debug: this prints the first rendered links so you can instantly verify
+      // whether the page is receiving unique URLs from cruiseData.json.
+      console.table([...out.querySelectorAll("a.link")].slice(0, 20).map(a => ({
+        title: a.closest(".card")?.querySelector(".name")?.textContent || "",
+        pkgid: a.dataset.pkgid || "",
+        hrefUsed: a.href,
+        rawHref: a.dataset.href || "",
+        rawUrl: a.dataset.url || ""
+      })));
+
       countNote.textContent =
         (totalMatches > capped.length)
           ? `Matches: ${totalMatches} (rendered: ${capped.length}). Tip: narrow search to see more.`
@@ -1887,27 +1891,6 @@
 
       applyHeatToDom();
     }
-
-
-    // Force View Details to open the URL stored on that exact card/button.
-    // This bypasses any weird stale anchor behavior and prevents every card from sharing one link.
-    out.addEventListener("click", (e) => {
-      const linkBtn = e.target.closest(".viewDetailsLink[data-url]");
-      if (!linkBtn) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      const url = linkBtn.getAttribute("data-url") || "";
-      if (!url) return;
-
-      console.log("Opening View Details", {
-        pkgid: linkBtn.getAttribute("data-pkgid") || "",
-        url
-      });
-
-      window.open(url, "_blank", "noopener");
-    });
 
     out.addEventListener("click", (e) => {
       const btn = e.target.closest(".dateBtn[data-panel]");
@@ -2028,7 +2011,7 @@
       const region = pickFirst(item, ["region"]);
       const journey = pickFirst(item, ["journeyText"]);
       const duration = normalizeDuration(item);
-      const url = getViewDetailsUrl(item);
+      const url = normalizeViewDetailsUrl(item);
       return String(url || `${title}|${region}|${duration}|${journey}`);
     }
 
@@ -2036,7 +2019,7 @@
       try {
         setStatus("warn", "Loading…");
 
-        const res = await fetch("./cruiseData.json", { cache: "no-store" });
+        const res = await fetch(`./cruiseData.json?v=${Date.now()}`, { cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status} (couldn't find cruiseData.json)`);
 
         const raw = await res.json();
