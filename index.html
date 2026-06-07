@@ -218,6 +218,45 @@
   }
   .select option{ color:#fffdfd; background-color: #02000b;}
 
+  .dateRangeFilter{
+    height: var(--controlH);
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    padding: 0 8px 0 10px;
+    border-radius: var(--controlR);
+    border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(0,0,0,0.28);
+  }
+  .dateRangeFilter:focus-within{
+    border-color: rgba(212,175,55,0.70);
+    box-shadow: 0 0 0 4px rgba(212,175,55,0.12);
+  }
+  .dateRangeLabel{
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .dateRangeInput{
+    height: 30px;
+    width: 138px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 0 8px;
+    outline: none;
+    color-scheme: dark;
+  }
+  .dateRangeInput:disabled{ opacity: .55; }
+  .dateRangeClear{
+    height: 30px;
+    min-width: 34px;
+    padding: 0 9px;
+    border-radius: 10px;
+  }
+
   .shipWrap{ position:relative; display:inline-block; }
   .shipMenu{
     position:absolute;
@@ -867,6 +906,18 @@
     }
 
     .select{ width: 100%; min-width: 0; }
+    .dateRangeFilter{
+      grid-column: 1 / -1;
+      height: auto;
+      min-height: var(--controlH);
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 8px 10px;
+    }
+    .dateRangeInput{
+      flex: 1 1 132px;
+      min-width: 0;
+    }
     .shipWrap{ width: 100%; }
     #shipBtn{ width: 100%; }
     #heatBtn{ width: 100%; }
@@ -897,8 +948,11 @@
 
   @media (max-width: 420px){
     .toolbar{ grid-template-columns: 1fr; }
-    .btn, .select, .field, #shipBtn, #heatBtn{ width: 100%; }
+    .btn, .select, .field, #shipBtn, #heatBtn, .dateRangeFilter{ width: 100%; }
     .btn.primary{ justify-self: stretch; }
+    .dateRangeLabel{ width: 100%; }
+    .dateRangeInput{ flex-basis: 100%; width: 100%; }
+    .dateRangeClear{ width: 100%; }
 
     .dateGrid{ grid-template-columns: 1fr; }
 
@@ -963,6 +1017,14 @@
           <option value="hasDates">Has dates</option>
           <option value="noDates">No dates</option>
         </select>
+
+        <div class="dateRangeFilter" title="Show cruises with any sailing overlapping this date range">
+          <span class="dateRangeLabel">Date range</span>
+          <input id="dateFromFilter" class="dateRangeInput" type="date" disabled aria-label="Date range start" />
+          <span style="color:rgba(255,255,255,0.55);">to</span>
+          <input id="dateToFilter" class="dateRangeInput" type="date" disabled aria-label="Date range end" />
+          <button id="dateRangeClear" class="btn dateRangeClear" type="button" disabled title="Clear date range">Clear</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1051,6 +1113,9 @@
     const regionFilter = document.getElementById("regionFilter");
     const daysFilter = document.getElementById("daysFilter"); // NEW
     const datesFilter = document.getElementById("datesFilter");
+    const dateFromFilter = document.getElementById("dateFromFilter");
+    const dateToFilter = document.getElementById("dateToFilter");
+    const dateRangeClear = document.getElementById("dateRangeClear");
     const countNote = document.getElementById("countNote");
     const reloadBtn = document.getElementById("reload");
 
@@ -1323,6 +1388,83 @@
       if (!Number.isFinite(t)) return null;
       const dt = new Date(t);
       return new Date(Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()));
+    }
+
+    function splitDateRangeText(input){
+      const raw = String(input || "").trim();
+      if (!raw) return { startText: "", endText: "" };
+      const parts = raw.split(/\s+(?:\u2013|\u2014|-|to)\s+/i).filter(Boolean);
+      return {
+        startText: (parts[0] || raw).trim(),
+        endText: (parts.length > 1 ? parts[parts.length - 1] : parts[0] || raw).trim()
+      };
+    }
+
+    function parseDateRangeToUtcSpan(dateRange){
+      const raw = String(dateRange || "").trim();
+      if (!raw) return null;
+
+      const { startText, endText } = splitDateRangeText(raw);
+      const fallbackYear = findAnyYearInString(raw);
+      const end = parseStartDateToUtcMidnight(endText, fallbackYear);
+      let start = parseStartDateToUtcMidnight(startText, fallbackYear || (end ? end.getUTCFullYear() : 0));
+
+      if (!start && end) start = end;
+      if (!start) return null;
+
+      let finalEnd = end || start;
+
+      // Handles ranges like "Dec 28 - Jan 5, 2027" where only the end year is explicit.
+      if (finalEnd && start > finalEnd && !findAnyYearInString(startText)) {
+        const adjusted = new Date(Date.UTC(start.getUTCFullYear() - 1, start.getUTCMonth(), start.getUTCDate()));
+        if (adjusted <= finalEnd) start = adjusted;
+      }
+
+      if (start > finalEnd) {
+        const tmp = start;
+        start = finalEnd;
+        finalEnd = tmp;
+      }
+
+      return { start, end: finalEnd };
+    }
+
+    function getItemDateSpans(item){
+      const ranges = [];
+      if (Array.isArray(item?.sailings)) {
+        for (const s of item.sailings) {
+          if (s?.dateRange) ranges.push(s.dateRange);
+        }
+      }
+      if (Array.isArray(item?.dateRanges)) ranges.push(...item.dateRanges);
+      if (item?.dateRangeText) ranges.push(item.dateRangeText);
+
+      const seen = new Set();
+      const spans = [];
+      for (const r of ranges) {
+        const key = String(r || "").trim();
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        const span = parseDateRangeToUtcSpan(key);
+        if (span) spans.push(span);
+      }
+      return spans;
+    }
+
+    function parseDateInputToUtc(input){
+      const m = String(input || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return null;
+      return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+    }
+
+    function itemOverlapsDateRange(item, fromDate, toDate){
+      const spans = item.__dateSpans || [];
+      if (!spans.length) return false;
+      return spans.some(span => {
+        if (fromDate && span.end < fromDate) return false;
+        if (toDate && span.start > toDate) return false;
+        return true;
+      });
     }
 
     function daysBetweenUtc(a, b){
@@ -1924,6 +2066,14 @@
       const region = regionFilter.value;
       const days = Number(daysFilter.value || 0); // NEW
       const datesMode = datesFilter.value;
+      let fromDate = parseDateInputToUtc(dateFromFilter.value);
+      let toDate = parseDateInputToUtc(dateToFilter.value);
+
+      if (fromDate && toDate && fromDate > toDate) {
+        const tmp = fromDate;
+        fromDate = toDate;
+        toDate = tmp;
+      }
 
       let list = DATA;
 
@@ -1934,6 +2084,10 @@
 
       if (datesMode === "hasDates") list = list.filter(it => it.__hasDates);
       else if (datesMode === "noDates") list = list.filter(it => !it.__hasDates);
+
+      if (fromDate || toDate) {
+        list = list.filter(it => itemOverlapsDateRange(it, fromDate, toDate));
+      }
 
       if (SELECTED_SHIPS.size > 0) {
         list = list.filter(it => SELECTED_SHIPS.has(it.__ship || "Unknown"));
@@ -1954,6 +2108,13 @@
     regionFilter.addEventListener("change", scheduleApplyFilters);
     daysFilter.addEventListener("change", scheduleApplyFilters); // NEW
     datesFilter.addEventListener("change", scheduleApplyFilters);
+    dateFromFilter.addEventListener("change", scheduleApplyFilters);
+    dateToFilter.addEventListener("change", scheduleApplyFilters);
+    dateRangeClear.addEventListener("click", () => {
+      dateFromFilter.value = "";
+      dateToFilter.value = "";
+      scheduleApplyFilters();
+    });
 
     const obs = new IntersectionObserver((entries) => {
       const entry = entries[0];
@@ -2041,11 +2202,13 @@
           const region = String(pickFirst(it, ["region"]) || "").trim();
           const hasDates = Array.isArray(it.dateRanges) && it.dateRanges.length > 0;
           const days = extractDaysNumber(it); // NEW
+          const dateSpans = getItemDateSpans(it);
 
           it.__ship = ship;
           it.__region = region;
-          it.__hasDates = hasDates;
+          it.__hasDates = hasDates || dateSpans.length > 0;
           it.__days = days; // NEW
+          it.__dateSpans = dateSpans;
           it.__key = computeKey(it);
           it.__search = buildSearchIndex(it);
         }
@@ -2054,6 +2217,9 @@
         regionFilter.disabled = false;
         daysFilter.disabled = false; // NEW
         datesFilter.disabled = false;
+        dateFromFilter.disabled = false;
+        dateToFilter.disabled = false;
+        dateRangeClear.disabled = false;
         shipBtn.disabled = false;
         heatBtn.disabled = false;
 
@@ -2065,6 +2231,8 @@
         regionFilter.value = "";
         daysFilter.value = ""; // NEW
         datesFilter.value = "";
+        dateFromFilter.value = "";
+        dateToFilter.value = "";
         SELECTED_SHIPS.clear();
         updateShipBtnLabel();
         closeShipMenu();
