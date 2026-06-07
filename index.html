@@ -1834,7 +1834,7 @@
         const heatClass = HEAT_DATE ? classifyHeat(d) : "";
         const sailing = sailings[i] || null;
         const sailingUrl = normalizeViewDetailsUrl(sailing?.viewDetailsUrl || sailing?.viewDetailsHref || "");
-        const inner = `<span>${escapeHtml(d)}</span><small>#${i+1}${sailing?.pkgid ? ` · ${escapeHtml(String(sailing.pkgid))}` : ""}</small>`;
+        const inner = `<span>${escapeHtml(d)}</span>`;
 
         if (sailingUrl) {
           return `<a class="dateCell${hidden}${heatClass ? ` ${heatClass}` : ""}" href="${escapeHtml(sailingUrl)}" target="_blank" rel="noopener" data-extra="${isExtra ? "1" : "0"}" data-date="${escapeHtml(d)}">${inner}</a>`;
