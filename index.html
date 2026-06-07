@@ -478,10 +478,10 @@
 
   .dateGrid{
     display:grid;
-    grid-template-columns: repeat(auto-fill, minmax(var(--dateMinCol), var(--dateMinCol)));
+    grid-template-columns: repeat(auto-fill, minmax(var(--dateMinCol), 1fr));
     gap: 8px;
     align-content: start;
-    justify-content: start;
+    justify-content: stretch;
     grid-auto-flow: row dense;
   }
 
@@ -494,7 +494,7 @@
     color: rgba(255,255,255,0.92);
     display:flex;
     align-items:center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 10px;
     transition: background .12s ease, border-color .12s ease, filter .12s ease;
     min-width: 0;
