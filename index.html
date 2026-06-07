@@ -218,6 +218,103 @@
   }
   .select option{ color:#fffdfd; background-color: #02000b;}
 
+  .select.isNativeHidden{
+    position:absolute;
+    width:1px;
+    height:1px;
+    opacity:0;
+    pointer-events:none;
+    margin:0;
+  }
+  .prettySelect{
+    position:relative;
+    min-width: 170px;
+  }
+  .prettySelectBtn{
+    width:100%;
+    height: var(--controlH);
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.92);
+    padding: 0 12px 0 14px;
+    border-radius: var(--controlR);
+    cursor: pointer;
+    font-size: 14px;
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 12px;
+    white-space: nowrap;
+    box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+    transition: transform .12s ease, filter .12s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .prettySelectBtn:hover{
+    transform: translateY(-1px);
+    filter: brightness(1.03);
+    border-color: rgba(255,255,255,0.22);
+    box-shadow: 0 12px 26px rgba(0,0,0,0.22);
+  }
+  .prettySelectBtn:focus-visible{
+    outline:none;
+    border-color: rgba(212,175,55,0.95);
+    box-shadow: 0 0 0 4px rgba(212,175,55,0.14), 0 12px 26px rgba(0,0,0,0.22);
+  }
+  .prettySelectBtn:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+    transform:none;
+    box-shadow:none;
+  }
+  .prettySelectArrow{
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid rgba(255,255,255,0.86);
+    border-bottom: 2px solid rgba(255,255,255,0.86);
+    transform: rotate(45deg) translateY(-2px);
+    flex: 0 0 auto;
+  }
+  .prettySelect.isOpen .prettySelectArrow{
+    transform: rotate(225deg) translateY(-2px);
+  }
+  .prettySelectMenu{
+    position:absolute;
+    left:0;
+    right:0;
+    top: calc(100% + 8px);
+    max-height: 320px;
+    overflow:auto;
+    padding: 8px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(3, 7, 13, 0.98);
+    box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+    display:none;
+    z-index: 80;
+  }
+  .prettySelect.isOpen .prettySelectMenu{ display:block; }
+  .prettySelectOption{
+    width:100%;
+    border:1px solid transparent;
+    background: transparent;
+    color: rgba(255,255,255,0.90);
+    min-height: 34px;
+    padding: 7px 10px;
+    border-radius: 10px;
+    text-align:left;
+    cursor:pointer;
+    font-size: 13px;
+    font-weight: 750;
+  }
+  .prettySelectOption:hover{
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.10);
+  }
+  .prettySelectOption.isSelected{
+    background: rgba(212,175,55,0.18);
+    border-color: rgba(212,175,55,0.70);
+    color: #fff;
+  }
+
   .dateRangeFilter{
     height: var(--controlH);
     display:flex;
@@ -906,6 +1003,7 @@
     }
 
     .select{ width: 100%; min-width: 0; }
+    .prettySelect{ width: 100%; min-width: 0; }
     .dateRangeFilter{
       grid-column: 1 / -1;
       height: auto;
@@ -948,7 +1046,7 @@
 
   @media (max-width: 420px){
     .toolbar{ grid-template-columns: 1fr; }
-    .btn, .select, .field, #shipBtn, #heatBtn, .dateRangeFilter{ width: 100%; }
+    .btn, .select, .prettySelect, .field, #shipBtn, #heatBtn, .dateRangeFilter{ width: 100%; }
     .btn.primary{ justify-self: stretch; }
     .dateRangeLabel{ width: 100%; }
     .dateRangeInput{ flex-basis: 100%; width: 100%; }
@@ -1275,6 +1373,80 @@
       regionFilter.innerHTML =
         `<option value="">All regions</option>` +
         sorted.map(r => `<option value="${escapeHtml(r)}">${escapeHtml(toTitleCase(r))}</option>`).join("");
+    }
+
+    const PRETTY_SELECTS = [];
+
+    function closePrettySelects(except = null){
+      for (const ps of PRETTY_SELECTS) {
+        if (ps.wrap !== except) ps.wrap.classList.remove("isOpen");
+      }
+    }
+
+    function enhanceSelect(select){
+      if (!select || select.__prettySelect) return null;
+
+      select.classList.add("isNativeHidden");
+
+      const wrap = document.createElement("div");
+      wrap.className = "prettySelect";
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "prettySelectBtn";
+      btn.innerHTML = `<span class="prettySelectText"></span><span class="prettySelectArrow" aria-hidden="true"></span>`;
+
+      const menu = document.createElement("div");
+      menu.className = "prettySelectMenu";
+      menu.setAttribute("role", "listbox");
+
+      wrap.appendChild(btn);
+      wrap.appendChild(menu);
+      select.insertAdjacentElement("afterend", wrap);
+
+      const api = { select, wrap, btn, menu };
+      select.__prettySelect = api;
+      PRETTY_SELECTS.push(api);
+
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (select.disabled) return;
+        const willOpen = !wrap.classList.contains("isOpen");
+        closePrettySelects(wrap);
+        wrap.classList.toggle("isOpen", willOpen);
+        closeShipMenu();
+      });
+
+      menu.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const optBtn = e.target.closest(".prettySelectOption");
+        if (!optBtn) return;
+        select.value = optBtn.getAttribute("data-value") || "";
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+        refreshPrettySelect(select);
+        wrap.classList.remove("isOpen");
+      });
+
+      refreshPrettySelect(select);
+      return api;
+    }
+
+    function refreshPrettySelect(select){
+      const api = select?.__prettySelect;
+      if (!api) return;
+
+      const selected = select.options[select.selectedIndex] || select.options[0];
+      api.btn.disabled = select.disabled;
+      api.btn.querySelector(".prettySelectText").textContent = selected ? selected.textContent : "";
+
+      api.menu.innerHTML = Array.from(select.options).map(opt => {
+        const isSelected = opt.value === select.value;
+        return `<button class="prettySelectOption${isSelected ? " isSelected" : ""}" type="button" role="option" aria-selected="${isSelected ? "true" : "false"}" data-value="${escapeHtml(opt.value)}">${escapeHtml(opt.textContent)}</button>`;
+      }).join("");
+    }
+
+    function refreshPrettySelects(){
+      for (const ps of PRETTY_SELECTS) refreshPrettySelect(ps.select);
     }
 
     // NEW: duration (days) options
@@ -1770,9 +1942,13 @@
 
     shipBtn.addEventListener("click", (e) => {
       e.stopPropagation();
+      closePrettySelects();
       shipMenu.style.display = (shipMenu.style.display === "none" || shipMenu.style.display === "") ? "block" : "none";
     });
-    document.addEventListener("click", closeShipMenu);
+    document.addEventListener("click", () => {
+      closeShipMenu();
+      closePrettySelects();
+    });
     shipMenu.addEventListener("click", (e) => e.stopPropagation());
 
     shipList.addEventListener("change", (e) => {
@@ -2105,9 +2281,9 @@
 
     // Use RAF scheduling instead of raw applyFilters per keystroke
     q.addEventListener("input", scheduleApplyFilters);
-    regionFilter.addEventListener("change", scheduleApplyFilters);
-    daysFilter.addEventListener("change", scheduleApplyFilters); // NEW
-    datesFilter.addEventListener("change", scheduleApplyFilters);
+    regionFilter.addEventListener("change", () => { refreshPrettySelect(regionFilter); scheduleApplyFilters(); });
+    daysFilter.addEventListener("change", () => { refreshPrettySelect(daysFilter); scheduleApplyFilters(); }); // NEW
+    datesFilter.addEventListener("change", () => { refreshPrettySelect(datesFilter); scheduleApplyFilters(); });
     dateFromFilter.addEventListener("change", scheduleApplyFilters);
     dateToFilter.addEventListener("change", scheduleApplyFilters);
     dateRangeClear.addEventListener("click", () => {
@@ -2231,6 +2407,7 @@
         regionFilter.value = "";
         daysFilter.value = ""; // NEW
         datesFilter.value = "";
+        refreshPrettySelects();
         dateFromFilter.value = "";
         dateToFilter.value = "";
         SELECTED_SHIPS.clear();
@@ -2248,7 +2425,13 @@
     heatBtn.addEventListener("click", (e) => { e.stopPropagation(); openHeatModal(); });
     heatFab.addEventListener("click", (e) => { e.stopPropagation(); openHeatModal(); });
 
-    window.addEventListener("DOMContentLoaded", loadData);
+    window.addEventListener("DOMContentLoaded", () => {
+      enhanceSelect(regionFilter);
+      enhanceSelect(daysFilter);
+      enhanceSelect(datesFilter);
+      refreshPrettySelects();
+      loadData();
+    });
     reloadBtn.addEventListener("click", loadData);
   </script>
 </body>
